@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
 }
 
 // ═══════════════════════════════════════════
@@ -63,7 +63,7 @@ model Category {
   id          Int       @id @default(autoincrement())
   name        String
   slug        String    @unique
-  description String?   @db.Text
+  description String?
   image       String?
   visible     Boolean   @default(true)
   order       Int       @default(0)
@@ -77,9 +77,9 @@ model Product {
   id            Int       @id @default(autoincrement())
   name          String
   slug          String    @unique
-  description   String?   @db.Text
-  price         Decimal   @db.Decimal(10, 2)
-  comparePrice  Decimal?  @db.Decimal(10, 2)
+  description   String?
+  price         Decimal
+  comparePrice  Decimal?
   categoryId    Int
   productType   ProductType @default(ROPA)
   featured      Boolean   @default(false)
@@ -109,7 +109,7 @@ model Variant {
   size        String?
   color       String?
   colorHex    String?
-  price       Decimal? @db.Decimal(10, 2)
+  price       Decimal?
   stock       Int     @default(0)
   sku         String?
 
@@ -138,7 +138,7 @@ model Review {
   userId    Int
   rating    Int
   title     String?
-  content   String?  @db.Text
+  content   String?
   status    String   @default("pending")
   createdAt DateTime @default(now())
 
@@ -174,11 +174,11 @@ model Order {
   userId        Int
   addressId     Int
   status        OrderStatus @default(PENDING)
-  subtotal      Decimal     @db.Decimal(10, 2)
-  shipping      Decimal     @db.Decimal(10, 2) @default(0)
-  total         Decimal     @db.Decimal(10, 2)
+  subtotal      Decimal
+  shipping      Decimal     @default(0)
+  total         Decimal
   stripeId      String?
-  notes         String?     @db.Text
+  notes         String?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
@@ -204,8 +204,8 @@ model OrderItem {
   productId   Int
   variantId   Int?
   quantity    Int
-  price       Decimal @db.Decimal(10, 2)
-  total       Decimal @db.Decimal(10, 2)
+  price       Decimal
+  total       Decimal
 
   order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product     Product @relation(fields: [productId], references: [id])
@@ -222,8 +222,8 @@ model BlogPost {
   id          Int       @id @default(autoincrement())
   slug        String    @unique
   title       String
-  excerpt     String?   @db.Text
-  content     String?   @db.LongText
+  excerpt     String?
+  content     String?
   coverImage  String?
   tag         String?
   status      PostStatus @default(DRAFT)
@@ -275,7 +275,7 @@ model BlogComment {
   postId    Int
   userId    Int?
   authorName String?
-  content   String   @db.Text
+  content   String
   status    String   @default("pending")
   createdAt DateTime @default(now())
 
@@ -305,7 +305,7 @@ model NewsletterSubscriber {
 model Discount {
   id         Int      @id @default(autoincrement())
   code       String   @unique
-  percent    Decimal  @db.Decimal(5, 2)
+  percent    Decimal
   active     Boolean  @default(true)
   usageLimit Int?
   usageCount Int      @default(0)
