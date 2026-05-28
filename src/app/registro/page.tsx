@@ -32,11 +32,22 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
-    // TODO: Integrate with API route
-    setTimeout(() => {
-      setLoading(false);
-      setError("Funcionalidad en desarrollo.");
-    }, 1000);
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: form.name, email: form.email, password: form.password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Error al crear la cuenta");
+      } else {
+        window.location.href = "/login?registered=1";
+      }
+    } catch {
+      setError("Error de conexión. Inténtalo de nuevo.");
+    }
+    setLoading(false);
   };
 
   return (

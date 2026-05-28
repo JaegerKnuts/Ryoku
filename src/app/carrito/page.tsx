@@ -1,50 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Truck } from "lucide-react";
-
-const initialItems = [
-  {
-    id: 1,
-    productId: 1,
-    name: "Hoodie Ryoku Classic",
-    variant: "Negro / L",
-    price: 59.99,
-    qty: 1,
-    image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=200&h=200&fit=crop",
-  },
-  {
-    id: 2,
-    productId: 3,
-    name: "Rolling Tray Bamboo",
-    variant: null,
-    price: 24.99,
-    qty: 2,
-    image: "https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?w=200&h=200&fit=crop",
-  },
-];
+import { useCart } from "@/context/CartContext";
 
 const FREE_SHIPPING_THRESHOLD = 60;
 
 export default function CartPage() {
-  const [items, setItems] = useState(initialItems);
+  const { items, total: subtotal, updateQty, removeItem } = useCart();
 
-  const updateQty = (id: number, delta: number) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, qty: Math.max(1, item.qty + delta) } : item
-      )
-    );
-  };
-
-  const removeItem = (id: number) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
   const freeShippingDiff = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
   const freeShippingProgress = Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD) * 100);
 
@@ -113,42 +79,42 @@ export default function CartPage() {
             {/* Cart items */}
             {items.map((item, i) => (
               <motion.div
-                key={item.id}
+                key={`${item.id}-${item.size}-${item.color}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
                 className="flex gap-4 p-4 rounded-xl border border-[var(--border)] bg-[var(--surface)]"
               >
-                <Link href={`/shop/producto/${item.productId}`} className="relative w-24 h-24 rounded-lg overflow-hidden bg-[var(--bg)] flex-shrink-0">
+                <Link href={`/shop/producto/${item.id}`} className="relative w-24 h-24 rounded-lg overflow-hidden bg-[var(--bg)] flex-shrink-0">
                   <Image src={item.image} alt={item.name} fill className="object-cover" sizes="96px" />
                 </Link>
                 <div className="flex-1 min-w-0">
-                  <Link href={`/shop/producto/${item.productId}`} className="font-medium text-sm hover:text-[var(--brand)] transition-colors">
+                  <Link href={`/shop/producto/${item.id}`} className="font-medium text-sm hover:text-[var(--brand)] transition-colors">
                     {item.name}
                   </Link>
-                  {item.variant && (
-                    <p className="text-xs text-[var(--text-muted)] font-mono mt-0.5">{item.variant}</p>
+                  {(item.size || item.color) && (
+                    <p className="text-xs text-[var(--text-muted)] font-mono mt-0.5">{[item.color, item.size].filter(Boolean).join(" / ")}</p>
                   )}
                   <p className="text-sm font-semibold mt-1">{item.price.toFixed(2)} €</p>
 
                   <div className="flex items-center justify-between mt-3">
                     <div className="inline-flex items-center rounded-lg border border-[var(--border)]">
                       <button
-                        onClick={() => updateQty(item.id, -1)}
+                        onClick={() => updateQty(item.id, item.qty - 1, item.size, item.color)}
                         className="w-8 h-8 flex items-center justify-center hover:bg-[var(--surface-hover)] transition-colors"
                       >
                         <Minus className="w-3 h-3" />
                       </button>
                       <span className="w-8 text-center text-xs font-medium">{item.qty}</span>
                       <button
-                        onClick={() => updateQty(item.id, 1)}
+                        onClick={() => updateQty(item.id, item.qty + 1, item.size, item.color)}
                         className="w-8 h-8 flex items-center justify-center hover:bg-[var(--surface-hover)] transition-colors"
                       >
                         <Plus className="w-3 h-3" />
                       </button>
                     </div>
                     <button
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => removeItem(item.id, item.size, item.color)}
                       className="text-[var(--text-muted)] hover:text-red-400 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
