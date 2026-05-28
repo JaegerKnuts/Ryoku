@@ -5,7 +5,8 @@ import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingBag, Heart, ChevronLeft, Star, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
+import { ShoppingBag, Heart, ChevronLeft, Star, Minus, Plus, Truck, Shield, RotateCcw, Check } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 const mockProduct = {
   id: 1,
@@ -41,6 +42,22 @@ export default function ProductPage() {
   const [selectedColor, setSelectedColor] = useState(mockProduct.colors[0].name);
   const [qty, setQty] = useState(1);
   const [liked, setLiked] = useState(false);
+  const [added, setAdded] = useState(false);
+  const { addItem } = useCart();
+
+  const handleAddToCart = () => {
+    addItem({
+      id: mockProduct.id,
+      name: mockProduct.name,
+      price: mockProduct.price,
+      image: mockProduct.images[0],
+      size: selectedSize,
+      color: selectedColor,
+      qty,
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  };
 
   return (
     <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -209,9 +226,19 @@ export default function ProductPage() {
 
           {/* Actions */}
           <div className="flex gap-3 mb-8">
-            <button className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 bg-[var(--brand)] text-black font-semibold text-sm rounded-full hover:bg-[var(--brand-hover)] transition-all hover:shadow-[0_0_30px_rgba(139,195,74,0.3)] uppercase tracking-wider">
-              <ShoppingBag className="w-4 h-4" />
-              Añadir al carrito
+            <button
+              onClick={handleAddToCart}
+              className={`flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 font-semibold text-sm rounded-full transition-all uppercase tracking-wider ${
+                added
+                  ? "bg-green-600 text-white"
+                  : "bg-[var(--brand)] text-white hover:opacity-90"
+              }`}
+            >
+              {added ? (
+                <><Check className="w-4 h-4" /> Añadido</>
+              ) : (
+                <><ShoppingBag className="w-4 h-4" /> Añadir al carrito</>
+              )}
             </button>
             <button
               onClick={() => setLiked(!liked)}

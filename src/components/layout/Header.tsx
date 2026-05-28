@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { ShoppingBag, Menu, X, Search, User } from "lucide-react";
+import { ShoppingBag, Menu, X, Search, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSession, signOut } from "next-auth/react";
+import { useCart } from "@/context/CartContext";
 
 const navLinks = [
   { href: "/shop", label: "Shop" },
@@ -14,6 +16,8 @@ const navLinks = [
 ];
 
 export function Header() {
+  const { data: session } = useSession();
+  const { count } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -83,20 +87,41 @@ export function Header() {
             >
               <Search className="w-4 h-4 text-[var(--text-secondary)]" />
             </button>
-            <Link
-              href="/cuenta"
-              className="hidden md:flex w-9 h-9 items-center justify-center rounded-full hover:bg-[var(--surface)] transition-colors"
-            >
-              <User className="w-4 h-4 text-[var(--text-secondary)]" />
-            </Link>
+            {session ? (
+              <div className="hidden md:flex items-center gap-2">
+                <Link
+                  href="/admin"
+                  className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[var(--surface)] transition-colors"
+                  title="Admin"
+                >
+                  <User className="w-4 h-4 text-[var(--brand)]" />
+                </Link>
+                <button
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[var(--surface)] transition-colors"
+                  title="Cerrar sesión"
+                >
+                  <LogOut className="w-4 h-4 text-[var(--text-secondary)]" />
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="hidden md:flex w-9 h-9 items-center justify-center rounded-full hover:bg-[var(--surface)] transition-colors"
+              >
+                <User className="w-4 h-4 text-[var(--text-secondary)]" />
+              </Link>
+            )}
             <Link
               href="/carrito"
               className="relative flex w-9 h-9 items-center justify-center rounded-full hover:bg-[var(--surface)] transition-colors"
             >
               <ShoppingBag className="w-4 h-4 text-[var(--text-secondary)]" />
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[var(--brand)] rounded-full text-[9px] font-bold text-white flex items-center justify-center">
-                0
-              </span>
+              {count > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-[var(--brand)] rounded-full text-[9px] font-bold text-white flex items-center justify-center">
+                  {count > 99 ? "99" : count}
+                </span>
+              )}
             </Link>
 
             {/* Mobile toggle */}
@@ -144,7 +169,7 @@ export function Header() {
               transition={{ delay: 0.3 }}
               className="flex gap-6 mt-8"
             >
-              <Link href="/cuenta" onClick={() => setMobileOpen(false)} className="text-[var(--text-secondary)] hover:text-[var(--text)]">
+              <Link href={session ? "/admin" : "/login"} onClick={() => setMobileOpen(false)} className="text-[var(--text-secondary)] hover:text-[var(--text)]">
                 <User className="w-6 h-6" />
               </Link>
               <Link href="/carrito" onClick={() => setMobileOpen(false)} className="text-[var(--text-secondary)] hover:text-[var(--text)]">

@@ -7,40 +7,196 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, MessageCircle, Share2, Bookmark, ChevronLeft, Send } from "lucide-react";
 
-const mockPost = {
-  slug: "como-curar-cogollos",
-  title: "Cómo curar cogollos correctamente",
-  date: "28 May 2026",
-  readTime: "5 min",
-  tag: "Cuidados",
-  likes: 234,
-  images: [
-    "https://images.unsplash.com/photo-1503262028195-93c528f03218?w=1200&h=800&fit=crop",
-    "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1200&h=800&fit=crop",
-    "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=1200&h=800&fit=crop",
-  ],
-  content: [
-    "El curado es, sin duda, una de las fases más importantes y más olvidadas del proceso. Una buena cosecha puede arruinarse completamente con un mal curado, mientras que un curado paciente puede elevar una cosecha mediocre a algo realmente especial.",
-    "## ¿Qué es el curado?",
-    "El curado es el proceso de secado lento y controlado de los cogollos tras la cosecha. Durante este proceso, los clorofilas se degradan, los terpenos maduran y el sabor mejora de forma dramática. Piensa en ello como el envejecimiento del vino: tiempo = calidad.",
-    "## Paso 1: Secado inicial",
-    "Cuelga las ramas boca abajo en un espacio oscuro con buena ventilación. Temperatura ideal: 18-22°C. Humedad: 45-55%. Este proceso dura entre 7 y 14 días. Sabrás que están listas cuando los tallos finos se rompan al doblarlos (no se doblen).",
-    "## Paso 2: Manicurado",
-    "Una vez secas, retira las hojas grandes con tijeras afiladas. Este paso mejora la estética y el sabor final. Guarda los recortes para hacer extracciones o mantequilla cannábica.",
-    "## Paso 3: Curado en botes",
-    "Coloca los cogollos en botes de cristal herméticos, llenándolos al 75%. Los primeros 14 días, abre los botes dos veces al día durante 10-15 minutos ('burping'). Después, reduce a una vez al día durante 2 semanas más.",
-    "## Consejos pro",
-    "- Usa botes de cristal oscuro para proteger de la luz UV\n- Invierte en un higrómetro digital para cada bote\n- La humedad ideal dentro del bote es 58-62%\n- Cuanto más tiempo cures (hasta 6 meses), mejor será el resultado\n- Nunca cures en plástico o metal, altera los terpenos",
-  ],
-  comments: [
-    { id: 1, author: "María G.", text: "Increíble guía, me ha ayudado mucho con mi primera cosecha. El tip del higrómetro es clave.", date: "27 May 2026", likes: 12 },
-    { id: 2, author: "Carlos R.", text: "¿Qué opináis de los botes Boveda? ¿Merece la pena la inversión?", date: "26 May 2026", likes: 8 },
-    { id: 3, author: "Laura P.", text: "Llevaba tiempo buscando algo así de completo. Compartido con mi grupo de cultivo!", date: "25 May 2026", likes: 15 },
-  ],
+const allPosts: Record<string, {
+  slug: string; title: string; date: string; readTime: string; tag: string; likes: number;
+  images: string[]; content: string[];
+  comments: { id: number; author: string; text: string; date: string; likes: number }[];
+}> = {
+  "como-curar-cogollos": {
+    slug: "como-curar-cogollos",
+    title: "Cómo curar cogollos correctamente",
+    date: "28 May 2026", readTime: "5 min", tag: "Cuidados", likes: 234,
+    images: [
+      "https://images.unsplash.com/photo-1503262028195-93c528f03218?w=1200&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1200&h=800&fit=crop",
+      "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=1200&h=800&fit=crop",
+    ],
+    content: [
+      "El curado es, sin duda, una de las fases más importantes y más olvidadas del proceso. Una buena cosecha puede arruinarse completamente con un mal curado, mientras que un curado paciente puede elevar una cosecha mediocre a algo realmente especial.",
+      "## ¿Qué es el curado?",
+      "El curado es el proceso de secado lento y controlado de los cogollos tras la cosecha. Durante este proceso, los clorofilas se degradan, los terpenos maduran y el sabor mejora de forma dramática.",
+      "## Paso 1: Secado inicial",
+      "Cuelga las ramas boca abajo en un espacio oscuro con buena ventilación. Temperatura ideal: 18-22°C. Humedad: 45-55%.",
+      "## Paso 2: Manicurado",
+      "Una vez secas, retira las hojas grandes con tijeras afiladas. Este paso mejora la estética y el sabor final.",
+      "## Paso 3: Curado en botes",
+      "Coloca los cogollos en botes de cristal herméticos, llenándolos al 75%. Los primeros 14 días, abre los botes dos veces al día durante 10-15 minutos.",
+      "## Consejos pro",
+      "- Usa botes de cristal oscuro para proteger de la luz UV\n- Invierte en un higrómetro digital\n- La humedad ideal dentro del bote es 58-62%\n- Nunca cures en plástico o metal",
+    ],
+    comments: [
+      { id: 1, author: "María G.", text: "Increíble guía, me ha ayudado mucho con mi primera cosecha.", date: "27 May 2026", likes: 12 },
+      { id: 2, author: "Carlos R.", text: "¿Qué opináis de los botes Boveda?", date: "26 May 2026", likes: 8 },
+    ],
+  },
+  "mejores-fertilizantes-organicos": {
+    slug: "mejores-fertilizantes-organicos",
+    title: "Los 5 mejores fertilizantes orgánicos",
+    date: "25 May 2026", readTime: "4 min", tag: "Cultivo", likes: 187,
+    images: ["https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1200&h=800&fit=crop"],
+    content: [
+      "Los fertilizantes orgánicos son la base de un cultivo saludable y sostenible. A continuación te presentamos los 5 más efectivos.",
+      "## 1. Humus de lombriz",
+      "Rico en nutrientes y microorganismos. Perfecto para todas las fases del ciclo.",
+      "## 2. Guano de murciélago",
+      "Alto en fósforo, ideal para floración. Aplicar con moderación.",
+      "## 3. Harina de hueso",
+      "Fuente de fósforo y calcio de liberación lenta.",
+      "## 4. Melaza",
+      "Alimenta la vida microbiana del sustrato. Usar en riego durante floración.",
+      "## 5. Té de compost",
+      "La forma más completa de aportar vida al sustrato. Preparar en 24-48h con aireación.",
+    ],
+    comments: [
+      { id: 1, author: "Pedro L.", text: "Gran selección, el humus de lombriz es mi favorito.", date: "24 May 2026", likes: 5 },
+    ],
+  },
+  "indoor-vs-outdoor": {
+    slug: "indoor-vs-outdoor",
+    title: "Indoor vs Outdoor: pros y contras",
+    date: "22 May 2026", readTime: "6 min", tag: "Cultivo", likes: 312,
+    images: ["https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=1200&h=800&fit=crop"],
+    content: [
+      "Elegir entre cultivo indoor y outdoor depende de muchos factores. Vamos a analizar los pros y contras de cada método.",
+      "## Indoor: Ventajas",
+      "Control total del ambiente, cosechas durante todo el año, mayor discreción.",
+      "## Indoor: Desventajas",
+      "Mayor inversión inicial, consumo eléctrico, espacio limitado.",
+      "## Outdoor: Ventajas",
+      "Luz solar gratuita, mayor producción por planta, menor coste.",
+      "## Outdoor: Desventajas",
+      "Dependencia del clima, plagas, una sola cosecha al año.",
+    ],
+    comments: [
+      { id: 1, author: "Ana M.", text: "Indoor 100%, el control es clave.", date: "21 May 2026", likes: 14 },
+    ],
+  },
+  "guia-esquejes": {
+    slug: "guia-esquejes",
+    title: "Guía completa de esquejes",
+    date: "18 May 2026", readTime: "5 min", tag: "Cultivo", likes: 156,
+    images: ["https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=1200&h=800&fit=crop"],
+    content: [
+      "Los esquejes son la forma más fiable de reproducir una genética que te gusta.",
+      "## Material necesario",
+      "Tijeras esterilizadas, gel de enraizamiento, jiffy o lana de roca, propagador con tapa.",
+      "## Técnica paso a paso",
+      "Corta un tallo de 10-15cm con al menos 2 nudos. Corte en diagonal bajo un nudo. Aplica gel y coloca en el sustrato.",
+      "## Condiciones ideales",
+      "Humedad 80-90%, temperatura 22-25°C, luz tenue 18h. Raíces en 7-14 días.",
+    ],
+    comments: [],
+  },
+  "nutrientes-fase-floracion": {
+    slug: "nutrientes-fase-floracion",
+    title: "Nutrientes en fase de floración",
+    date: "15 May 2026", readTime: "4 min", tag: "Cuidados", likes: 201,
+    images: ["https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=1200&h=800&fit=crop"],
+    content: [
+      "La fase de floración requiere un cambio radical en la nutrición de tus plantas.",
+      "## Reducir nitrógeno",
+      "El nitrógeno debe reducirse gradualmente al entrar en floración.",
+      "## Aumentar fósforo y potasio",
+      "PK son los macronutrientes clave en floración. Aumentar progresivamente.",
+      "## Flush final",
+      "Las últimas 2 semanas riega solo con agua para limpiar sales y mejorar el sabor.",
+    ],
+    comments: [
+      { id: 1, author: "Luis F.", text: "El flush final marca toda la diferencia.", date: "14 May 2026", likes: 9 },
+    ],
+  },
+  "como-hacer-mantequilla-cannabica": {
+    slug: "como-hacer-mantequilla-cannabica",
+    title: "Cómo hacer mantequilla cannábica",
+    date: "12 May 2026", readTime: "7 min", tag: "Recetas", likes: 445,
+    images: ["https://images.unsplash.com/photo-1495214783159-3503fd1b572d?w=1200&h=800&fit=crop"],
+    content: [
+      "La mantequilla cannábica (cannabutter) es la base de casi todas las recetas de comestibles.",
+      "## Ingredientes",
+      "250g de mantequilla sin sal, 7-10g de material vegetal descarboxilado, agua.",
+      "## Descarboxilación",
+      "Hornea el material a 110°C durante 40 minutos para activar el THC.",
+      "## Preparación",
+      "Derrite la mantequilla con agua a fuego bajo. Añade el material y cocina 2-3 horas sin hervir. Cuela con estopilla.",
+      "## Dosificación",
+      "Empieza con poca cantidad. Los efectos tardan 45-90 minutos en aparecer.",
+    ],
+    comments: [
+      { id: 1, author: "Sofía R.", text: "La mejor receta que he encontrado. Resultados increíbles.", date: "11 May 2026", likes: 22 },
+    ],
+  },
+  "variedades-autoflorecientes": {
+    slug: "variedades-autoflorecientes",
+    title: "Las mejores variedades autoflorecientes de 2026",
+    date: "10 May 2026", readTime: "5 min", tag: "Genética", likes: 289,
+    images: ["https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=1200&h=800&fit=crop"],
+    content: [
+      "Las autoflorecientes han evolucionado enormemente. Estas son las más destacadas de 2026.",
+      "## 1. Critical Auto",
+      "Producción masiva en 70 días. Fácil de cultivar.",
+      "## 2. Gorilla Glue Auto",
+      "Potencia brutal, resina abundante. Ideal para extracciones.",
+      "## 3. Purple Punch Auto",
+      "Colores espectaculares y sabor dulce. Perfecta para principiantes.",
+    ],
+    comments: [],
+  },
+  "ph-del-agua-riego": {
+    slug: "ph-del-agua-riego",
+    title: "pH del agua de riego: la clave que muchos ignoran",
+    date: "8 May 2026", readTime: "4 min", tag: "Cuidados", likes: 178,
+    images: ["https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1200&h=800&fit=crop"],
+    content: [
+      "El pH del agua de riego es fundamental para la absorción de nutrientes.",
+      "## pH ideal",
+      "En tierra: 6.0-7.0. En hidro/coco: 5.5-6.5.",
+      "## Cómo medir",
+      "Usa un medidor digital de pH. Calibra semanalmente.",
+      "## Cómo ajustar",
+      "pH Up (bicarbonato) o pH Down (ácido fosfórico). Ajusta antes de regar.",
+    ],
+    comments: [
+      { id: 1, author: "Diego M.", text: "Desde que controlo el pH todo va mucho mejor.", date: "7 May 2026", likes: 6 },
+    ],
+  },
+  "galletas-cannabis": {
+    slug: "galletas-cannabis",
+    title: "Receta: Galletas de cannabis perfectas",
+    date: "5 May 2026", readTime: "6 min", tag: "Recetas", likes: 523,
+    images: ["https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=1200&h=800&fit=crop"],
+    content: [
+      "Galletas crujientes por fuera, tiernas por dentro. Con dosificación precisa.",
+      "## Ingredientes",
+      "100g cannabutter, 150g harina, 100g azúcar moreno, 1 huevo, chips de chocolate, vainilla.",
+      "## Preparación",
+      "Mezcla mantequilla y azúcar. Añade huevo y vainilla. Incorpora harina. Añade chips.",
+      "## Horneado",
+      "180°C durante 10-12 minutos. Dejar enfriar en bandeja.",
+      "## Dosificación",
+      "Cada galleta ≈ 10-15mg THC. Espera al menos 1 hora antes de repetir.",
+    ],
+    comments: [
+      { id: 1, author: "Marta V.", text: "Espectaculares! La receta perfecta.", date: "4 May 2026", likes: 18 },
+    ],
+  },
 };
+
+const defaultPost = allPosts["como-curar-cogollos"];
 
 export default function BlogPostPage() {
   const params = useParams();
+  const slug = params.slug as string;
+  const mockPost = allPosts[slug] || defaultPost;
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(mockPost.likes);
   const [saved, setSaved] = useState(false);
