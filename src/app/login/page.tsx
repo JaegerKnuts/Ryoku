@@ -5,8 +5,11 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -17,11 +20,21 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    // TODO: Integrate with NextAuth
-    setTimeout(() => {
-      setLoading(false);
-      setError("Funcionalidad en desarrollo.");
-    }, 1000);
+
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+
+    setLoading(false);
+
+    if (result?.error) {
+      setError("Email o contraseña incorrectos.");
+    } else {
+      router.push("/admin");
+      router.refresh();
+    }
   };
 
   return (
