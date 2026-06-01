@@ -134,8 +134,14 @@ export default function ProductPage() {
   };
 
   const getStockForSelection = () => {
-    if (!selectedVariant) return 0;
-    return selectedVariant.stock;
+    if (selectedVariant) return selectedVariant.stock;
+    // If no variant selected but product has no variants, return default stock
+    const sizes = getUniqueSizes();
+    const colors = getUniqueColors();
+    if (sizes.length === 0 && colors.length === 0) {
+      return 100; // Default stock for products without variants
+    }
+    return 0;
   };
 
   const canAddToCart = () => {
@@ -323,11 +329,9 @@ export default function ProductPage() {
           )}
 
           {/* Stock info */}
-          {selectedVariant && (
-            <p className={`text-xs mb-4 ${stock > 5 ? "text-green-500" : stock > 0 ? "text-orange-500" : "text-red-500"}`}>
-              {stock > 5 ? "✓ En stock" : stock > 0 ? `⚠ Solo quedan ${stock} unidades` : "✗ Sin stock"}
-            </p>
-          )}
+          <p className={`text-xs mb-4 ${stock > 5 ? "text-green-500" : stock > 0 ? "text-orange-500" : "text-red-500"}`}>
+            {stock > 5 ? "✓ En stock" : stock > 0 ? `⚠ Solo quedan ${stock} unidades` : "✗ Sin stock"}
+          </p>
 
           {/* Quantity */}
           <div className="mb-8">
