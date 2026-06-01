@@ -116,7 +116,7 @@ export default function ProductPage() {
   const handleAddToCart = () => {
     if (!product) return;
     
-    const finalPrice = selectedVariant?.price || product.price;
+    const finalPrice = Number(selectedVariant?.price || product.price) || 0;
     const imageUrl = product.images?.[0]?.url || "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600&h=600&fit=crop";
     
     addItem({
@@ -151,7 +151,8 @@ export default function ProductPage() {
 
   const getFinalPrice = () => {
     if (!product) return 0;
-    return selectedVariant?.price || product.price;
+    const price = selectedVariant?.price || product.price;
+    return Number(price) || 0;
   };
 
   if (loading) {
@@ -259,7 +260,7 @@ export default function ProductPage() {
           {/* Price */}
           <div className="flex items-center gap-3 mb-6">
             <p className="text-3xl font-bold">{getFinalPrice().toFixed(2)} €</p>
-            {product.comparePrice && product.comparePrice > getFinalPrice() && (
+            {product.comparePrice && Number(product.comparePrice) > getFinalPrice() && (
               <p className="text-xl text-[var(--text-muted)] line-through">
                 {Number(product.comparePrice).toFixed(2)} €
               </p>
