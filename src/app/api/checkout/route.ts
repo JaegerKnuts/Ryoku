@@ -81,7 +81,17 @@ export async function POST(req: Request) {
     });
 
     // Create Stripe checkout session
-    const stripeInstance = getStripe();
+    let stripeInstance;
+    try {
+      stripeInstance = getStripe();
+    } catch (stripeError: any) {
+      console.error("Stripe not configured:", stripeError);
+      return NextResponse.json(
+        { error: "El pago no está configurado. Contacta con el administrador." },
+        { status: 503 }
+      );
+    }
+    
     const stripeSession = await stripeInstance.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: items.map((item: any) => ({

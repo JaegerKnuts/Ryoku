@@ -85,7 +85,7 @@ export default function CheckoutPage() {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert("Error al iniciar el pago. Inténtalo de nuevo.");
+        alert(data.error || "Error al iniciar el pago. Inténtalo de nuevo.");
         setLoading(false);
       }
     } catch (error) {
@@ -95,7 +95,16 @@ export default function CheckoutPage() {
     }
   };
 
-  if (items.length === 0) return null;
+  if (items.length === 0) {
+    return (
+      <div className="pt-24 pb-16 px-4 text-center">
+        <p className="text-[var(--text-muted)] mb-4">Tu carrito está vacío</p>
+        <Link href="/shop" className="text-[var(--brand)] hover:underline">
+          Ir a la tienda
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
