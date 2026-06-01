@@ -2,11 +2,22 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-05-27.dahlia",
-});
+// Lazy initialization of Stripe
+let stripe: Stripe | null = null;
+function getStripe() {
+  if (!stripe) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) {
+      throw new Error("STRIPE_SECRET_KEY no configurada");
+    }
+    stripe = new Stripe(key, {
+      apiVersion: "2026-05-27.dahlia",
+    });
+  }
+  return stripe;
+}
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
 
 export async function POST(req: Request) {
   try {
@@ -15,8 +26,10 @@ export async function POST(req: Request) {
 
     let event: Stripe.Event;
 
+    const stripeInstance = getStripe();
+    
     try {
-      event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
+      event = stripeInstance.webhooks.constructEvent(payload, signature, webhookSecret);
     } catch (err: any) {
       console.error(`Webhook signature verification failed: ${err.message}`);
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });

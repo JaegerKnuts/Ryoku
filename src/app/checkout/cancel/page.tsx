@@ -1,11 +1,12 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { XCircle, ArrowRight, CreditCard } from "lucide-react";
+import { XCircle, ArrowRight, CreditCard, Loader2 } from "lucide-react";
 
-export default function CheckoutCancelPage() {
+function CancelContent() {
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get("order");
 
@@ -54,5 +55,17 @@ export default function CheckoutCancelPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function CheckoutCancelPage() {
+  return (
+    <Suspense fallback={
+      <div className="pt-24 pb-16 px-4 flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--brand)]" />
+      </div>
+    }>
+      <CancelContent />
+    </Suspense>
   );
 }

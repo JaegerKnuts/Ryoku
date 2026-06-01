@@ -4,9 +4,20 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-05-27.dahlia",
-});
+// Lazy initialization of Stripe - only when needed
+let stripe: Stripe | null = null;
+function getStripe() {
+  if (!stripe) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) {
+      throw new Error("STRIPE_SECRET_KEY no configurada");
+    }
+    stripe = new Stripe(key, {
+      apiVersion: "2026-05-27.dahlia",
+    });
+  }
+  return stripe;
+}
 
 export async function POST(req: Request) {
   try {
@@ -70,7 +81,8 @@ export async function POST(req: Request) {
     });
 
     // Create Stripe checkout session
-    const stripeSession = await stripe.checkout.sessions.create({
+    const stripeInstance = getStripe();
+    const stripeSession = await stripeInstance.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: items.map((item: any) => ({
         price_data: {
