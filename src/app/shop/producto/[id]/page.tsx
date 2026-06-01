@@ -53,9 +53,16 @@ export default function ProductPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
+        console.log("Fetching product with slug:", slug);
         const res = await fetch(`/api/products/${slug}`);
-        if (!res.ok) throw new Error("Producto no encontrado");
+        console.log("API response status:", res.status);
+        if (!res.ok) {
+          const errorData = await res.json();
+          console.error("API error:", errorData);
+          throw new Error(errorData.error || "Producto no encontrado");
+        }
         const data = await res.json();
+        console.log("Product loaded:", data.name);
         setProduct(data);
         
         // Set default selections based on variants
