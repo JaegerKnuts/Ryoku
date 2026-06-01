@@ -79,7 +79,7 @@ export default function CartPage() {
             {/* Cart items */}
             {items.map((item, i) => (
               <motion.div
-                key={`${item.id}-${item.size}-${item.color}`}
+                key={`${item.id}-${item.variantId || 'no-variant'}-${item.size}-${item.color}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
@@ -100,21 +100,21 @@ export default function CartPage() {
                   <div className="flex items-center justify-between mt-3">
                     <div className="inline-flex items-center rounded-lg border border-[var(--border)]">
                       <button
-                        onClick={() => updateQty(item.id, item.qty - 1, item.size, item.color)}
+                        onClick={() => updateQty(item.id, item.qty - 1, item.size, item.color, item.variantId)}
                         className="w-8 h-8 flex items-center justify-center hover:bg-[var(--surface-hover)] transition-colors"
                       >
                         <Minus className="w-3 h-3" />
                       </button>
                       <span className="w-8 text-center text-xs font-medium">{item.qty}</span>
                       <button
-                        onClick={() => updateQty(item.id, item.qty + 1, item.size, item.color)}
+                        onClick={() => updateQty(item.id, item.qty + 1, item.size, item.color, item.variantId)}
                         className="w-8 h-8 flex items-center justify-center hover:bg-[var(--surface-hover)] transition-colors"
                       >
                         <Plus className="w-3 h-3" />
                       </button>
                     </div>
                     <button
-                      onClick={() => removeItem(item.id, item.size, item.color)}
+                      onClick={() => removeItem(item.id, item.size, item.color, item.variantId)}
                       className="text-[var(--text-muted)] hover:text-red-400 transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -152,10 +152,13 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <button className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-[var(--brand)] text-black font-semibold text-sm rounded-full hover:bg-[var(--brand-hover)] transition-all hover:shadow-[0_0_30px_rgba(139,195,74,0.3)] uppercase tracking-wider">
+              <Link
+                href="/checkout"
+                className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-[var(--brand)] text-black font-semibold text-sm rounded-full hover:bg-[var(--brand-hover)] transition-all hover:shadow-[0_0_30px_rgba(139,195,74,0.3)] uppercase tracking-wider"
+              >
                 Tramitar pedido
                 <ArrowRight className="w-4 h-4" />
-              </button>
+              </Link>
 
               <Link
                 href="/shop"

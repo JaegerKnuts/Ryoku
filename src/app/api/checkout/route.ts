@@ -1,0 +1,128 @@
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import prisma from "@/lib/prisma";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2026-05-27.dahlia",
+});
+
+export async function POST(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    const body = await req.json();
+    const { items, address, subtotal, shipping, total } = body;
+
+    if (!items || items.length === 0) {
+      return NextResponse.json({ error: "Carrito vacío" }, { status: 400 });
+    }
+
+    // Create or get user
+    let userId: number | null = null;
+    if (session?.user) {
+      const user = await prisma.user.findUnique({
+        where: { email: session.user.email! },
+      });
+      userId = user?.id || null;
+    }
+
+    // Create address in database
+    const addressData: any = {
+      name: address.name,
+      surname: address.surname,
+      address: address.address,
+      city: address.city,
+      province: address.province,
+      postalCode: address.postalCode,
+      phone: address.phone || null,
+      country: "ES",
+      isDefault: false,
+    };
+    
+    if (userId) {
+      addressData.userId = userId;
+    }
+    
+    const addressRecord = await prisma.address.create({ data: addressData });
+
+    // Create order in database (pending)
+    const orderNumber = `RY${Date.now().toString(36).toUpperCase()}`;
+    const order = await prisma.order.create({
+      data: {
+        orderNumber,
+        userId: userId || 1, // Default user if not logged in
+        addressId: addressRecord.id,
+        status: "PENDING",
+        subtotal: subtotal,
+        shipping: shipping,
+        total: total,
+        items: {
+          create: items.map((item: any) => ({
+            productId: item.id,
+            variantId: item.variantId || null,
+            quantity: item.qty,
+            price: item.price,
+            total: item.price * item.qty,
+          })),
+        },
+      },
+    });
+
+    // Create Stripe checkout session
+    const stripeSession = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: items.map((item: any) => ({
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: item.name,
+            description: [item.color, item.size].filter(Boolean).join(" / ") || undefined,
+            images: [item.image],
+          },
+          unit_amount: Math.round(item.price * 100), // Stripe uses cents
+        },
+        quantity: item.qty,
+      })),
+      shipping_options: shipping > 0 ? [{
+        shipping_rate_data: {
+          type: "fixed_amount",
+          fixed_amount: { amount: Math.round(shipping * 100), currency: "eur" },
+          display_name: "Envío estándar",
+          delivery_estimate: {
+            minimum: { unit: "business_day", value: 3 },
+            maximum: { unit: "business_day", value: 5 },
+          },
+        },
+      }] : [{
+        shipping_rate_data: {
+          type: "fixed_amount",
+          fixed_amount: { amount: 0, currency: "eur" },
+          display_name: "Envío gratis",
+        },
+      }],
+      mode: "payment",
+      success_url: `${process.env.NEXT_PUBLIC_URL}/checkout/success?order=${orderNumber}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_URL}/checkout/cancel?order=${orderNumber}`,
+      metadata: {
+        orderId: String(order.id),
+        orderNumber,
+      },
+      customer_email: session?.user?.email || undefined,
+    });
+
+    // Update order with Stripe session ID
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { stripeId: stripeSession.id },
+    });
+
+    return NextResponse.json({ url: stripeSession.url });
+  } catch (error) {
+    console.error("Checkout error:", error);
+    return NextResponse.json(
+      { error: "Error al procesar el checkout" },
+      { status: 500 }
+    );
+  }
+}

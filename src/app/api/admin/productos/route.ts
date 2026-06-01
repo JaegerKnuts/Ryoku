@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { name, slug, description, price, comparePrice, categoryId, productType, featured, active } = body;
+  const { name, slug, description, price, comparePrice, categoryId, productType, featured, active, variants, images } = body;
 
   if (!name || !slug || !price || !categoryId) {
     return NextResponse.json({ error: "Campos obligatorios: name, slug, price, categoryId" }, { status: 400 });
@@ -41,6 +41,30 @@ export async function POST(req: Request) {
       productType: productType || "ROPA",
       featured: featured || false,
       active: active !== false,
+      // Create variants if provided
+      variants: variants && variants.length > 0 ? {
+        create: variants.map((v: any) => ({
+          name: v.name || `${v.size} ${v.color}`,
+          size: v.size || null,
+          color: v.color || null,
+          colorHex: v.colorHex || null,
+          price: v.price || null,
+          stock: v.stock || 0,
+          sku: v.sku || null,
+        })),
+      } : undefined,
+      // Create images if provided
+      images: images && images.length > 0 ? {
+        create: images.map((img: any, idx: number) => ({
+          url: img.url,
+          alt: img.alt || name,
+          order: idx,
+        })),
+      } : undefined,
+    },
+    include: {
+      variants: true,
+      images: true,
     },
   });
 

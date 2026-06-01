@@ -111,7 +111,7 @@ export default function LoginPage() {
 
         {/* Footer links */}
         <div className="mt-6 text-center space-y-3">
-          <Link href="/forgot-password" className="text-xs text-[var(--text-muted)] hover:text-[var(--brand)] transition-colors">
+          <Link href="/recuperar-contrasena" className="text-xs text-[var(--text-muted)] hover:text-[var(--brand)] transition-colors">
             ¿Olvidaste tu contraseña?
           </Link>
           <p className="text-sm text-[var(--text-secondary)]">

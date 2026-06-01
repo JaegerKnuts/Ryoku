@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Package, FileText, ShoppingCart, Users } from "lucide-react";
+import { Package, FileText, ShoppingCart, Users, Folder, Tag } from "lucide-react";
 
 interface Stats {
   products: number;
@@ -59,7 +59,7 @@ export default function AdminDashboard() {
 
       <div className="bg-[var(--bg)] p-6 rounded-lg border border-[var(--border)]">
         <h2 className="text-lg font-semibold mb-4">Acciones rápidas</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           <a
             href="/admin/productos/nuevo"
             className="p-4 border border-[var(--border)] rounded-md hover:border-[var(--brand)] transition-colors text-center"
@@ -68,11 +68,25 @@ export default function AdminDashboard() {
             <span className="text-sm font-medium">Nuevo producto</span>
           </a>
           <a
+            href="/admin/categorias"
+            className="p-4 border border-[var(--border)] rounded-md hover:border-[var(--brand)] transition-colors text-center"
+          >
+            <Folder className="w-5 h-5 mx-auto mb-2" style={{ color: "var(--brand)" }} />
+            <span className="text-sm font-medium">Categorías</span>
+          </a>
+          <a
             href="/admin/blog/nuevo"
             className="p-4 border border-[var(--border)] rounded-md hover:border-[var(--brand)] transition-colors text-center"
           >
             <FileText className="w-5 h-5 mx-auto mb-2" style={{ color: "var(--brand)" }} />
             <span className="text-sm font-medium">Nuevo post</span>
+          </a>
+          <a
+            href="/admin/descuentos"
+            className="p-4 border border-[var(--border)] rounded-md hover:border-[var(--brand)] transition-colors text-center"
+          >
+            <Tag className="w-5 h-5 mx-auto mb-2" style={{ color: "var(--brand)" }} />
+            <span className="text-sm font-medium">Descuentos</span>
           </a>
           <a
             href="/admin/pedidos"

@@ -9,6 +9,7 @@ interface CartItem {
   image: string;
   size?: string;
   color?: string;
+  variantId?: number;
   qty: number;
 }
 
@@ -17,8 +18,8 @@ interface CartContextType {
   count: number;
   total: number;
   addItem: (item: Omit<CartItem, "qty"> & { qty?: number }) => void;
-  removeItem: (id: number, size?: string, color?: string) => void;
-  updateQty: (id: number, qty: number, size?: string, color?: string) => void;
+  removeItem: (id: number, size?: string, color?: string, variantId?: number) => void;
+  updateQty: (id: number, qty: number, size?: string, color?: string, variantId?: number) => void;
   clearCart: () => void;
 }
 
@@ -45,11 +46,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addItem = useCallback((item: Omit<CartItem, "qty"> & { qty?: number }) => {
     setItems((prev) => {
       const existing = prev.find(
-        (i) => i.id === item.id && i.size === item.size && i.color === item.color
+        (i) => i.id === item.id && i.size === item.size && i.color === item.color && i.variantId === item.variantId
       );
       if (existing) {
         return prev.map((i) =>
-          i.id === item.id && i.size === item.size && i.color === item.color
+          i.id === item.id && i.size === item.size && i.color === item.color && i.variantId === item.variantId
             ? { ...i, qty: i.qty + (item.qty || 1) }
             : i
         );
@@ -58,18 +59,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const removeItem = useCallback((id: number, size?: string, color?: string) => {
-    setItems((prev) => prev.filter((i) => !(i.id === id && i.size === size && i.color === color)));
+  const removeItem = useCallback((id: number, size?: string, color?: string, variantId?: number) => {
+    setItems((prev) => prev.filter((i) => !(i.id === id && i.size === size && i.color === color && i.variantId === variantId)));
   }, []);
 
-  const updateQty = useCallback((id: number, qty: number, size?: string, color?: string) => {
+  const updateQty = useCallback((id: number, qty: number, size?: string, color?: string, variantId?: number) => {
     if (qty <= 0) {
-      removeItem(id, size, color);
+      removeItem(id, size, color, variantId);
       return;
     }
     setItems((prev) =>
       prev.map((i) =>
-        i.id === id && i.size === size && i.color === color ? { ...i, qty } : i
+        i.id === id && i.size === size && i.color === color && i.variantId === variantId ? { ...i, qty } : i
       )
     );
   }, [removeItem]);
