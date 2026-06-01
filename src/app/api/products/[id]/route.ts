@@ -8,8 +8,13 @@ export async function GET(
   const { id } = await params;
 
   try {
-    const product = await prisma.product.findUnique({
-      where: { id: parseInt(id) },
+    // Try to find by slug first, then by id if it's numeric
+    const isNumeric = /^\d+$/.test(id);
+    
+    const product = await prisma.product.findFirst({
+      where: isNumeric 
+        ? { OR: [{ slug: id }, { id: parseInt(id) }] }
+        : { slug: id },
       include: {
         images: { orderBy: { order: "asc" } },
         category: true,
