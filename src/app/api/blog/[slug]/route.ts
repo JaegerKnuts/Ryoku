@@ -18,7 +18,7 @@ export async function GET(
           take: 20,
           include: { user: { select: { name: true } } },
         },
-        _count: { select: { likes: true, comments: true } },
+        likes: { select: { id: true } },
       },
     });
 
