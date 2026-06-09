@@ -90,9 +90,9 @@ export function Header() {
             {session ? (
               <div className="hidden md:flex items-center gap-2">
                 <Link
-                  href="/admin"
+                  href={(session.user as { role?: string })?.role === "ADMIN" ? "/admin" : "/mis-pedidos"}
                   className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[var(--surface)] transition-colors"
-                  title="Admin"
+                  title={(session.user as { role?: string })?.role === "ADMIN" ? "Admin" : "Mi cuenta"}
                 >
                   <User className="w-4 h-4 text-[var(--brand)]" />
                 </Link>
@@ -169,7 +169,17 @@ export function Header() {
               transition={{ delay: 0.3 }}
               className="flex gap-6 mt-8"
             >
-              <Link href={session ? "/admin" : "/login"} onClick={() => setMobileOpen(false)} className="text-[var(--text-secondary)] hover:text-[var(--text)]">
+              <Link
+                href={
+                  session
+                    ? (session.user as { role?: string })?.role === "ADMIN"
+                      ? "/admin"
+                      : "/mis-pedidos"
+                    : "/login"
+                }
+                onClick={() => setMobileOpen(false)}
+                className="text-[var(--text-secondary)] hover:text-[var(--text)]"
+              >
                 <User className="w-6 h-6" />
               </Link>
               <Link href="/carrito" onClick={() => setMobileOpen(false)} className="text-[var(--text-secondary)] hover:text-[var(--text)]">

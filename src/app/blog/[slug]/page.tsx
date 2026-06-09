@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, MessageCircle, Share2, Bookmark, ChevronLeft, Send, Loader2, ArrowUpRight, Package } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { getBlogPostImages } from "@/lib/blog";
 
 interface BlogPost {
@@ -20,7 +22,7 @@ interface BlogPost {
   createdAt: string;
   images: { url: string; alt: string | null }[];
   likes: { id: number }[];
-  comments: { id: number; text: string; createdAt: string; user: { name: string } }[];
+  comments: { id: number; content: string; createdAt: string; user: { name: string } | null }[];
 }
 
 type ContentBlock =
@@ -105,19 +107,19 @@ function renderContent(block: ContentBlock, index: number) {
   switch (block.type) {
     case "h2":
       return (
-        <h2 key={index} className="text-xl font-bold mt-10 mb-4 text-[var(--text)]">
+        <h2 key={index} className="text-xl font-bold mt-10 mb-4 text-[var(--text)] break-words">
           {block.text}
         </h2>
       );
     case "h3":
       return (
-        <h3 key={index} className="text-lg font-semibold mt-8 mb-3 text-[var(--text)]">
+        <h3 key={index} className="text-lg font-semibold mt-8 mb-3 text-[var(--text)] break-words">
           {block.text}
         </h3>
       );
     case "p":
       return (
-        <p key={index} className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
+        <p key={index} className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4 break-words">
           {block.text}
         </p>
       );
@@ -125,18 +127,18 @@ function renderContent(block: ContentBlock, index: number) {
       return (
         <ul key={index} className="space-y-2 my-4">
           {block.items.map((item, j) => (
-            <li key={j} className="flex items-start gap-2 text-sm text-[var(--text-secondary)] leading-relaxed">
+            <li key={j} className="flex items-start gap-2 text-sm text-[var(--text-secondary)] leading-relaxed min-w-0">
               <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand)] mt-1.5 flex-shrink-0" />
-              {item}
+              <span className="break-words">{item}</span>
             </li>
           ))}
         </ul>
       );
     case "glossary":
       return (
-        <div key={index} className="flex items-start gap-3 py-3 border-b border-[var(--border)] last:border-0">
-          <span className="text-sm font-bold text-[var(--brand)] flex-shrink-0 mt-0.5">{block.term}</span>
-          <span className="text-sm text-[var(--text-secondary)]">{block.definition}</span>
+        <div key={index} className="flex items-start gap-3 py-3 border-b border-[var(--border)] last:border-0 min-w-0">
+          <span className="text-sm font-bold text-[var(--brand)] flex-shrink-0 mt-0.5 break-words">{block.term}</span>
+          <span className="text-sm text-[var(--text-secondary)] break-words min-w-0">{block.definition}</span>
         </div>
       );
     case "table":
@@ -154,7 +156,7 @@ function renderContent(block: ContentBlock, index: number) {
               {block.rows.map((row, j) => (
                 <tr key={j} className="border-t border-[var(--border)]">
                   {row.map((cell, k) => (
-                    <td key={k} className="px-4 py-3 text-[var(--text-secondary)]">{cell}</td>
+                    <td key={k} className="px-4 py-3 text-[var(--text-secondary)] break-words">{cell}</td>
                   ))}
                 </tr>
               ))}
@@ -171,6 +173,8 @@ function renderContent(block: ContentBlock, index: number) {
 
 export default function BlogPostPage() {
   const params = useParams();
+  const router = useRouter();
+  const { data: session } = useSession();
   const slug = params.slug as string;
   
   const [post, setPost] = useState<BlogPost | null>(null);
@@ -182,6 +186,8 @@ export default function BlogPostPage() {
   const [saved, setSaved] = useState(false);
   const [currentImage, setCurrentImage] = useState(0);
   const [comment, setComment] = useState("");
+  const [commentError, setCommentError] = useState("");
+  const [commentLoading, setCommentLoading] = useState(false);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -203,9 +209,57 @@ export default function BlogPostPage() {
     }
   }, [slug]);
 
-  const handleLike = () => {
-    setLiked(!liked);
-    setLikeCount(liked ? likeCount - 1 : likeCount + 1);
+  const handleLike = async () => {
+    try {
+      const res = await fetch(`/api/blog/${slug}/like`, { method: "POST" });
+      if (!res.ok) return;
+      const data = await res.json();
+      setLiked(data.liked);
+      setLikeCount(data.count);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleCommentSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    setCommentError("");
+
+    if (!session) {
+      router.push(`/login?callbackUrl=/blog/${slug}`);
+      return;
+    }
+
+    if (!comment.trim()) {
+      setCommentError("Escribe un comentario antes de enviar.");
+      return;
+    }
+
+    setCommentLoading(true);
+    try {
+      const res = await fetch(`/api/blog/${slug}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: comment }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setCommentError(data.error || "No se pudo publicar el comentario.");
+        return;
+      }
+
+      setPost((prev) =>
+        prev
+          ? { ...prev, comments: [data.comment, ...(prev.comments || [])] }
+          : prev
+      );
+      setComment("");
+    } catch {
+      setCommentError("Error de conexión. Inténtalo de nuevo.");
+    } finally {
+      setCommentLoading(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -246,7 +300,7 @@ export default function BlogPostPage() {
   const readTime = getReadTime(post.content || "");
 
   return (
-    <div className="pt-24 pb-16 px-4 sm:px-6 max-w-3xl mx-auto">
+    <div className="pt-24 pb-16 px-4 sm:px-6 max-w-3xl mx-auto min-w-0 break-words overflow-x-hidden">
       {/* Back */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-6">
         <Link
@@ -348,11 +402,11 @@ export default function BlogPostPage() {
           <span className="text-xs text-[var(--text-muted)]">{formatDate(post.createdAt)}</span>
           <span className="text-xs text-[var(--text-muted)]">· {readTime} lectura</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight leading-tight">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight leading-tight break-words">
           {post.title}
         </h1>
         {post.excerpt && (
-          <p className="text-sm text-[var(--text-secondary)] mt-3 leading-relaxed">
+          <p className="text-sm text-[var(--text-secondary)] mt-3 leading-relaxed break-words">
             {post.excerpt}
           </p>
         )}
@@ -397,23 +451,48 @@ export default function BlogPostPage() {
         </h3>
 
         {/* Comment input */}
-        <div className="flex gap-3 mb-8">
-          <div className="w-9 h-9 rounded-full bg-[var(--surface)] flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-bold text-[var(--text-muted)]">TÚ</span>
+        <form onSubmit={handleCommentSubmit} className="mb-8">
+          <div className="flex gap-3">
+            <div className="w-9 h-9 rounded-full bg-[var(--surface)] flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-bold text-[var(--text-muted)]">
+                {session?.user?.name?.charAt(0)?.toUpperCase() || "TÚ"}
+              </span>
+            </div>
+            <div className="flex-1 relative">
+              <input
+                type="text"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder={session ? "Escribe un comentario..." : "Inicia sesión para comentar"}
+                disabled={commentLoading}
+                className="w-full px-4 py-2.5 pr-10 rounded-full bg-[var(--surface)] border border-[var(--border)] text-sm placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--brand)] transition-colors disabled:opacity-50"
+              />
+              <button
+                type="submit"
+                disabled={commentLoading || !comment.trim()}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--brand)] hover:text-[var(--brand-hover)] transition-colors disabled:opacity-50"
+                aria-label="Enviar comentario"
+              >
+                {commentLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+              </button>
+            </div>
           </div>
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Escribe un comentario..."
-              className="w-full px-4 py-2.5 pr-10 rounded-full bg-[var(--surface)] border border-[var(--border)] text-sm placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--brand)] transition-colors"
-            />
-            <button className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--brand)] hover:text-[var(--brand-hover)] transition-colors">
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+          {commentError && (
+            <p className="mt-2 text-xs text-red-400">{commentError}</p>
+          )}
+          {!session && (
+            <p className="mt-2 text-xs text-[var(--text-muted)]">
+              <Link href={`/login?callbackUrl=/blog/${slug}`} className="text-[var(--brand)] hover:underline">
+                Inicia sesión
+              </Link>{" "}
+              para dejar un comentario.
+            </p>
+          )}
+        </form>
 
         {/* Comments list */}
         <div className="space-y-6">
@@ -429,8 +508,8 @@ export default function BlogPostPage() {
                   <span className="text-sm font-medium">{c.user?.name || 'Anónimo'}</span>
                   <span className="text-xs text-[var(--text-muted)]">{formatDate(c.createdAt)}</span>
                 </div>
-                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                  {c.text}
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed break-words">
+                  {c.content}
                 </p>
               </div>
             </div>

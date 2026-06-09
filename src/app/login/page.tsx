@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { Eye, EyeOff, ArrowRight } from "lucide-react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { signIn, getSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const registered = searchParams.get("registered") === "1";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -21,19 +24,35 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-    setLoading(false);
+      if (result?.error) {
+        setError("Email o contraseña incorrectos. ¿No tienes cuenta? Regístrate.");
+        return;
+      }
 
-    if (result?.error) {
-      setError("Email o contraseña incorrectos.");
-    } else {
-      router.push("/admin");
+      if (!result?.ok) {
+        setError("No se pudo iniciar sesión. Inténtalo de nuevo.");
+        return;
+      }
+
+      const session = await getSession();
+      const role = (session?.user as { role?: string } | undefined)?.role;
+      const destination = role === "ADMIN"
+        ? (callbackUrl.startsWith("/admin") ? callbackUrl : "/admin")
+        : (callbackUrl.startsWith("/admin") ? "/" : callbackUrl);
+
+      router.push(destination);
       router.refresh();
+    } catch {
+      setError("Error de conexión. Inténtalo de nuevo.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -55,6 +74,12 @@ export default function LoginPage() {
             Accede a tu cuenta Ryoku
           </p>
         </div>
+
+        {registered && (
+          <p className="mb-4 text-xs text-[var(--brand)] bg-[var(--brand-glow)] px-3 py-2 rounded-lg text-center">
+            Cuenta creada correctamente. Ya puedes iniciar sesión.
+          </p>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -123,5 +148,13 @@ export default function LoginPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Cargando...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }

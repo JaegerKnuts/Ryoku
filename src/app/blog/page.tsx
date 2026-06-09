@@ -179,10 +179,10 @@ export default function BlogPage() {
                     <p className="text-[10px] font-mono tracking-[0.15em] uppercase text-[var(--text-muted)] mb-1.5">
                       {formatDate(post.createdAt)}
                     </p>
-                    <h2 className="text-base font-semibold leading-tight mb-2 group-hover:text-[var(--brand)] transition-colors">
+                    <h2 className="text-base font-semibold leading-tight mb-2 group-hover:text-[var(--brand)] transition-colors break-words">
                       {post.title}
                     </h2>
-                    <p className="text-sm text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
+                    <p className="text-sm text-[var(--text-secondary)] line-clamp-2 leading-relaxed break-words">
                       {post.excerpt || ""}
                     </p>
                   </div>
