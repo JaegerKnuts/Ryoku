@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import BlogTagField from "@/components/admin/BlogTagField";
 import BlogEditor from "@/components/admin/blog/BlogEditor";
+import BlogPostEditorLayout from "@/components/admin/blog/BlogPostEditorLayout";
 
 export default function EditPost() {
   const params = useParams();
@@ -64,20 +64,16 @@ export default function EditPost() {
   }
 
   return (
-    <div>
-      <div className="flex items-center gap-4 mb-8">
-        <Link href="/admin/blog" className="p-2 hover:bg-[var(--surface)] rounded-md transition-colors">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <h1
-          className="text-4xl uppercase tracking-tight"
-          style={{ fontFamily: "var(--font-bebas), Impact, sans-serif" }}
-        >
-          Editar Post
-        </h1>
-      </div>
-
-      <form onSubmit={handleSubmit} className="max-w-5xl bg-[var(--bg)] p-6 sm:p-8 rounded-lg border border-[var(--border)] space-y-6">
+    <BlogPostEditorLayout
+      title="Editar Post"
+      preview={{
+        postTitle: form.title,
+        excerpt: form.excerpt,
+        tag: form.tag,
+        content: form.content,
+      }}
+    >
+      <form onSubmit={handleSubmit} className="bg-[var(--bg)] p-6 sm:p-8 rounded-lg border border-[var(--border)] space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-2">Título *</label>
@@ -160,6 +156,6 @@ export default function EditPost() {
           </Link>
         </div>
       </form>
-    </div>
+    </BlogPostEditorLayout>
   );
 }

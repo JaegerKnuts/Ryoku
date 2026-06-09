@@ -134,7 +134,7 @@ export default function BlogEditor({ value, onChange, postTitle }: BlogEditorPro
         <button
           type="button"
           onClick={() => setPreviewOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-[var(--border)] rounded-md hover:bg-[var(--surface)] transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium border border-[var(--border)] rounded-md hover:bg-[var(--surface)] transition-colors lg:hidden"
         >
           <Eye className="w-3.5 h-3.5" />
           Vista previa
