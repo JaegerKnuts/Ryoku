@@ -146,7 +146,7 @@ export default function NuevoPost() {
           </label>
           <div className="flex gap-2">
             <input
-              type="url"
+              type="text"
               value={form.coverImage}
               onChange={(e) => setForm({ ...form, coverImage: e.target.value })}
               placeholder="URL o sube una imagen"

@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, MessageCircle, Bookmark, Loader2, ArrowRight } from "lucide-react";
+import { getBlogPostImage } from "@/lib/blog";
 
 interface BlogPost {
   id: number;
@@ -12,6 +13,7 @@ interface BlogPost {
   title: string;
   excerpt: string | null;
   content: string;
+  coverImage: string | null;
   tag: string;
   status: string;
   createdAt: string;
@@ -52,13 +54,6 @@ export default function BlogPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const getPostImage = (post: BlogPost) => {
-    if (post.images && post.images.length > 0) {
-      return post.images[0].url;
-    }
-    return "https://images.unsplash.com/photo-1503262028195-93c528f03218?w=800&h=800&fit=crop";
   };
 
   const formatDate = (dateString: string) => {
@@ -141,13 +136,24 @@ export default function BlogPage() {
                 <Link href={`/blog/${post.slug}`} className="block">
                   {/* Image */}
                   <div className="relative aspect-square rounded-xl overflow-hidden bg-[var(--surface)] mb-4">
-                    <Image
-                      src={getPostImage(post)}
-                      alt={post.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    />
+                    {(() => {
+                      const imageSrc = getBlogPostImage(post);
+                      return imageSrc.startsWith("data:") ? (
+                        <img
+                          src={imageSrc}
+                          alt={post.title}
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <Image
+                          src={imageSrc}
+                          alt={post.title}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        />
+                      );
+                    })()}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300" />
                     {/* Hover stats */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { syncBlogCoverImage } from "@/lib/blog";
 import prisma from "@/lib/prisma";
 
 export async function GET() {
@@ -26,17 +27,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Campos obligatorios: title, slug" }, { status: 400 });
   }
 
-  const post = await prisma.blogPost.create({
-    data: {
-      title,
-      slug,
-      excerpt: excerpt || null,
-      content: content || null,
-      coverImage: coverImage || null,
-      tag: tag || null,
-      status: status || "DRAFT",
-      publishedAt: status === "PUBLISHED" ? new Date() : null,
-    },
+  const post = await prisma.$transaction(async (tx) => {
+    const created = await tx.blogPost.create({
+      data: {
+        title,
+        slug,
+        excerpt: excerpt || null,
+        content: content || null,
+        coverImage: coverImage || null,
+        tag: tag || null,
+        status: status || "DRAFT",
+        publishedAt: status === "PUBLISHED" ? new Date() : null,
+      },
+    });
+    await syncBlogCoverImage(tx, created.id, coverImage || null);
+    return created;
   });
 
   return NextResponse.json(post, { status: 201 });

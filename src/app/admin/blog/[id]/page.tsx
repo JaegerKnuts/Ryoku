@@ -155,7 +155,7 @@ export default function EditPost() {
           <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-2">Imagen</label>
           <div className="flex gap-2">
             <input
-              type="url"
+              type="text"
               value={form.coverImage}
               onChange={(e) => setForm({ ...form, coverImage: e.target.value })}
               placeholder="URL o sube una imagen"

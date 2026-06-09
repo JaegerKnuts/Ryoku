@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, MessageCircle, Share2, Bookmark, ChevronLeft, Send, Loader2, ArrowUpRight, Package } from "lucide-react";
+import { getBlogPostImages } from "@/lib/blog";
 
 interface BlogPost {
   id: number;
@@ -13,6 +14,7 @@ interface BlogPost {
   title: string;
   excerpt: string | null;
   content: string;
+  coverImage: string | null;
   tag: string;
   status: string;
   createdAt: string;
@@ -240,9 +242,7 @@ export default function BlogPostPage() {
   }
 
   const contentBlocks = parseContent(post.content || "");
-  const hasImages = post.images && post.images.length > 0;
-  const defaultImage = "https://images.unsplash.com/photo-1503262028195-93c528f03218?w=1200&h=800&fit=crop";
-  const images = hasImages ? post.images.map(img => img.url) : [defaultImage];
+  const images = getBlogPostImages(post);
   const readTime = getReadTime(post.content || "");
 
   return (
@@ -266,14 +266,22 @@ export default function BlogPostPage() {
         className="mb-6"
       >
         <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-[var(--surface)]">
-          <Image
-            src={images[currentImage]}
-            alt={post.title}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 768px"
-            priority
-          />
+          {images[currentImage].startsWith("data:") ? (
+            <img
+              src={images[currentImage]}
+              alt={post.title}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : (
+            <Image
+              src={images[currentImage]}
+              alt={post.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 768px"
+              priority
+            />
+          )}
           {images.length > 1 && (
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
               {images.map((_, i) => (
