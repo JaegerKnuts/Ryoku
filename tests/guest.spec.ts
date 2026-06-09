@@ -11,7 +11,7 @@ test.describe("👤 Flujo Invitado — Homepage", () => {
 
     await expect(page.locator("text=RYØKU Hash Archive").first()).toBeVisible();
     await expect(page.locator("text=Últimos artículos")).toBeVisible();
-    await expect(page.locator("text=Productos seleccionados")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Productos seleccionados" })).toBeVisible();
     await expect(page.locator("text=Únete a la familia")).toBeVisible();
   });
 });
