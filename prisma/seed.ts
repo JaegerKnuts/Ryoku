@@ -53,7 +53,7 @@ async function main() {
       create: {
         ...p,
         categoryId: ropa.id,
-        productType: "ROPA",
+        productType: "MERCH",
         featured: p.featured || false,
         variants: {
           create: [
@@ -85,7 +85,7 @@ async function main() {
       create: {
         ...p,
         categoryId: parafernalia.id,
-        productType: "PARAFERNALIA",
+        productType: "SELECTED_GEAR",
         featured: p.featured || false,
       },
     });

@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       price,
       comparePrice: comparePrice || null,
       categoryId: Number(categoryId),
-      productType: productType || "ROPA",
+      productType: productType || "MERCH",
       featured: featured || false,
       active: active !== false,
       // Create variants if provided

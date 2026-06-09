@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShoppingBag, Heart, ChevronLeft, Star, Minus, Plus, Truck, Shield, RotateCcw, Check, Loader2 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { isInWishlist, toggleWishlist } from "@/lib/local-prefs";
 
 interface Variant {
   id: number;
@@ -53,17 +54,14 @@ export default function ProductPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        console.log("Fetching product with slug:", slug);
         const res = await fetch(`/api/products/${slug}`);
-        console.log("API response status:", res.status);
         if (!res.ok) {
           const errorData = await res.json();
-          console.error("API error:", errorData);
           throw new Error(errorData.error || "Producto no encontrado");
         }
         const data = await res.json();
-        console.log("Product loaded:", data.name);
         setProduct(data);
+        setLiked(isInWishlist(data.id));
         
         // Set default selections based on variants
         if (data.variants && data.variants.length > 0) {
@@ -374,7 +372,11 @@ export default function ProductPage() {
               )}
             </button>
             <button
-              onClick={() => setLiked(!liked)}
+              type="button"
+              onClick={() => {
+                if (!product) return;
+                setLiked(toggleWishlist(product.id));
+              }}
               className={`w-14 h-14 rounded-full border flex items-center justify-center transition-all ${
                 liked
                   ? "bg-red-500/10 border-red-500/30 text-red-500"

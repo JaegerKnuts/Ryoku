@@ -18,8 +18,8 @@ export type UserRole = (typeof UserRole)[keyof typeof UserRole]
 
 
 export const ProductType = {
-  ROPA: 'ROPA',
-  PARAFERNALIA: 'PARAFERNALIA'
+  MERCH: 'MERCH',
+  SELECTED_GEAR: 'SELECTED_GEAR'
 } as const
 
 export type ProductType = (typeof ProductType)[keyof typeof ProductType]

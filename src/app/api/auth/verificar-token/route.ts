@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+import crypto from "crypto";
 
 export async function GET(req: Request) {
   try {
@@ -9,10 +11,15 @@ export async function GET(req: Request) {
       return NextResponse.json({ valid: false, error: "Token no proporcionado" }, { status: 400 });
     }
 
-    // En producción, verificar el token contra la base de datos
-    // Por ahora, aceptamos cualquier token para la demo
-    
-    return NextResponse.json({ valid: true });
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const user = await prisma.user.findFirst({
+      where: {
+        resetToken: tokenHash,
+        resetTokenExpiry: { gt: new Date() },
+      },
+    });
+
+    return NextResponse.json({ valid: !!user });
   } catch (error) {
     console.error("Error verificando token:", error);
     return NextResponse.json({ valid: false, error: "Error al verificar token" }, { status: 500 });

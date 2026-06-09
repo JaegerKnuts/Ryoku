@@ -9,6 +9,7 @@ import { Heart, MessageCircle, Share2, Bookmark, ChevronLeft, Send, Loader2, Arr
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { getBlogPostImages } from "@/lib/blog";
+import { isPostSaved, toggleSavedPost } from "@/lib/local-prefs";
 
 interface BlogPost {
   id: number;
@@ -188,6 +189,7 @@ export default function BlogPostPage() {
   const [comment, setComment] = useState("");
   const [commentError, setCommentError] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState("");
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -208,6 +210,57 @@ export default function BlogPostPage() {
       fetchPost();
     }
   }, [slug]);
+
+  useEffect(() => {
+    if (slug) setSaved(isPostSaved(slug));
+  }, [slug]);
+
+  const scrollToComments = () => {
+    document.getElementById("comments")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  useEffect(() => {
+    if (!loading && window.location.hash === "#comments") {
+      scrollToComments();
+    }
+  }, [loading]);
+
+  const handleSave = () => {
+    if (!slug) return;
+    setSaved(toggleSavedPost(slug));
+  };
+
+  const handleShare = async () => {
+    if (!post) return;
+
+    const url = window.location.href;
+    const shareData = {
+      title: post.title,
+      text: post.excerpt || post.title,
+      url,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+
+      await navigator.clipboard.writeText(url);
+      setShareFeedback("Enlace copiado");
+      setTimeout(() => setShareFeedback(""), 2000);
+    } catch (err) {
+      if ((err as Error).name === "AbortError") return;
+
+      try {
+        await navigator.clipboard.writeText(url);
+        setShareFeedback("Enlace copiado");
+      } catch {
+        setShareFeedback("No se pudo compartir");
+      }
+      setTimeout(() => setShareFeedback(""), 2000);
+    }
+  };
 
   const handleLike = async () => {
     try {
@@ -370,16 +423,28 @@ export default function BlogPostPage() {
           <Heart className={`w-5 h-5 ${liked ? "fill-red-500" : ""}`} />
           {likeCount}
         </button>
-        <button className="flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--brand)] transition-colors">
+        <button
+          type="button"
+          onClick={scrollToComments}
+          className="flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--brand)] transition-colors"
+          aria-label="Ir a comentarios"
+        >
           <MessageCircle className="w-5 h-5" />
           {post.comments?.length || 0}
         </button>
-        <button className="flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--brand)] transition-colors">
+        <button
+          type="button"
+          onClick={handleShare}
+          className="flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--brand)] transition-colors"
+          aria-label="Compartir post"
+        >
           <Share2 className="w-5 h-5" />
+          {shareFeedback && <span className="text-xs text-[var(--brand)]">{shareFeedback}</span>}
         </button>
         <div className="flex-1" />
         <button
-          onClick={() => setSaved(!saved)}
+          type="button"
+          onClick={handleSave}
           className={`transition-colors ${
             saved ? "text-[var(--brand)]" : "text-[var(--text-muted)] hover:text-[var(--brand)]"
           }`}
@@ -445,7 +510,7 @@ export default function BlogPostPage() {
       )}
 
       {/* Comments */}
-      <section className="border-t border-[var(--border)] pt-8">
+      <section id="comments" className="border-t border-[var(--border)] pt-8 scroll-mt-28">
         <h3 className="text-lg font-bold mb-6">
           Comentarios ({post.comments?.length || 0})
         </h3>

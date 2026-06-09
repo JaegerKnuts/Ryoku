@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 export async function POST(req: Request) {
   try {
@@ -14,21 +15,32 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "La contraseña debe tener al menos 6 caracteres" }, { status: 400 });
     }
 
-    // En un caso real, verificaríamos el token contra un almacenamiento seguro
-    // Por ahora, esta es una implementación básica
-    
-    // Buscar usuario por token (en producción usa una tabla de tokens)
-    // Como no tenemos campos dedicados, esta implementación es simplificada
-    
-    // Hash de la nueva contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const user = await prisma.user.findFirst({
+      where: {
+        resetToken: tokenHash,
+        resetTokenExpiry: { gt: new Date() },
+      },
+    });
 
-    // En producción, aquí verificarías el token y obtendrías el userId del token
-    // Por ahora, requerimos que el userId venga en la petición (no es seguro, es para demo)
-    
-    return NextResponse.json({ 
+    if (!user) {
+      return NextResponse.json({ error: "El enlace ha expirado o no es válido" }, { status: 400 });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetToken: null,
+        resetTokenExpiry: null,
+      },
+    });
+
+    return NextResponse.json({
       success: true,
-      message: "Contraseña actualizada correctamente" 
+      message: "Contraseña actualizada correctamente",
     });
   } catch (error) {
     console.error("Error en reset:", error);

@@ -39,7 +39,7 @@ export default function NuevoProducto() {
     price: "",
     comparePrice: "",
     categoryId: "",
-    productType: "ROPA",
+    productType: "MERCH",
     featured: false,
     active: true,
   });
@@ -255,8 +255,8 @@ export default function NuevoProducto() {
               onChange={(e) => setForm({ ...form, productType: e.target.value })}
               className="w-full px-4 py-3 border border-[var(--border)] rounded-md text-sm focus:outline-none focus:border-[var(--brand)]"
             >
-              <option value="ROPA">Ropa</option>
-              <option value="PARAFERNALIA">Parafernalia</option>
+              <option value="MERCH">Merch</option>
+              <option value="SELECTED_GEAR">Selected Gear</option>
             </select>
           </div>
           <div className="flex items-end gap-4">

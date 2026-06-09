@@ -508,10 +508,6 @@ export type EnumPostStatusFieldUpdateOperationsInput = {
   set?: $Enums.PostStatus
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type BlogPostCreateNestedOneWithoutImagesInput = {
   create?: Prisma.XOR<Prisma.BlogPostCreateWithoutImagesInput, Prisma.BlogPostUncheckedCreateWithoutImagesInput>
   connectOrCreate?: Prisma.BlogPostCreateOrConnectWithoutImagesInput

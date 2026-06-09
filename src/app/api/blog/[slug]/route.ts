@@ -8,8 +8,8 @@ export async function GET(
   const { slug } = await params;
 
   try {
-    const post = await prisma.blogPost.findUnique({
-      where: { slug },
+    const post = await prisma.blogPost.findFirst({
+      where: { slug, status: "PUBLISHED" },
       include: {
         images: { orderBy: { order: "asc" } },
         comments: {

@@ -7,10 +7,12 @@ import { useState } from "react";
 export function NewsletterSection() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
+    setError("");
     try {
       const res = await fetch("/api/newsletter", {
         method: "POST",
@@ -20,8 +22,13 @@ export function NewsletterSection() {
       if (res.ok) {
         setSubmitted(true);
         setEmail("");
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "No se pudo completar la suscripción.");
       }
-    } catch {}
+    } catch {
+      setError("Error de conexión. Inténtalo de nuevo.");
+    }
   };
 
   return (
@@ -47,7 +54,9 @@ export function NewsletterSection() {
             </p>
 
             {!submitted ? (
-              <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+              <div className="max-w-md mx-auto">
+                {error && <p className="mb-3 text-xs text-red-400 text-center">{error}</p>}
+                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
                 <input
                   type="email"
                   value={email}
@@ -66,6 +75,7 @@ export function NewsletterSection() {
                   Suscribirme
                 </button>
               </form>
+              </div>
             ) : (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}

@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, MessageCircle, Bookmark, Loader2, ArrowRight } from "lucide-react";
 import { getBlogPostImage } from "@/lib/blog";
+import { isPostSaved, toggleSavedPost } from "@/lib/local-prefs";
 
 interface BlogPost {
   id: number;
@@ -22,13 +23,26 @@ interface BlogPost {
   comments: { id: number }[];
 }
 
-const tags = ["Todo", "Empieza aquí", "Extracciones", "Materia prima", "Calidad y clasificación", "Curado y conservación", "Consumo y herramientas", "Glosario"];
-
 export default function BlogPage() {
+  const [tags, setTags] = useState<string[]>(["Todo"]);
   const [activeTag, setActiveTag] = useState("Todo");
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
+  const [savedPosts, setSavedPosts] = useState<Record<string, boolean>>({});
+  const [likeState, setLikeState] = useState<Record<string, { liked: boolean; count: number }>>({});
+
+  useEffect(() => {
+    fetch("/api/blog?limit=50")
+      .then((res) => res.json())
+      .then((data) => {
+        const uniqueTags = Array.from(
+          new Set((data.posts || []).map((p: BlogPost) => p.tag).filter(Boolean))
+        ) as string[];
+        if (uniqueTags.length > 0) setTags(["Todo", ...uniqueTags]);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetchPosts();
@@ -48,6 +62,11 @@ export default function BlogPage() {
       if (data.posts) {
         setPosts(data.posts);
         setPagination(data.pagination);
+        const saved: Record<string, boolean> = {};
+        data.posts.forEach((post: BlogPost) => {
+          saved[post.slug] = isPostSaved(post.slug);
+        });
+        setSavedPosts(saved);
       }
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -62,6 +81,22 @@ export default function BlogPage() {
       month: "short",
       year: "numeric",
     });
+  };
+
+  const handleLike = async (slug: string) => {
+    try {
+      const res = await fetch(`/api/blog/${slug}/like`, { method: "POST" });
+      if (!res.ok) return;
+      const data = await res.json();
+      setLikeState((prev) => ({ ...prev, [slug]: { liked: data.liked, count: data.count } }));
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleSave = (slug: string) => {
+    const saved = toggleSavedPost(slug);
+    setSavedPosts((prev) => ({ ...prev, [slug]: saved }));
   };
 
   const filtered = posts;
@@ -85,7 +120,8 @@ export default function BlogPage() {
           Una guía en constante evolución para entender qué estás consumiendo, cómo se obtiene y qué significa realmente cada término. Sin repetir etiquetas vacías. Sin asumir que todo el mundo sabe de lo que se está hablando. Desde los conceptos básicos hasta los matices que separan dos extracciones aparentemente similares.
         </p>
         <button
-          onClick={() => setActiveTag("Empieza aquí")}
+          type="button"
+          onClick={() => setActiveTag(tags[1] || "Todo")}
           className="group inline-flex items-center gap-2 px-5 py-2.5 text-white font-semibold text-xs uppercase tracking-[0.1em] transition-all hover:opacity-90"
           style={{ background: "var(--brand)", borderRadius: "var(--radius)" }}
         >
@@ -190,17 +226,33 @@ export default function BlogPage() {
 
                 {/* Actions bar */}
                 <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[var(--border)]">
-                  <button className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--brand)] transition-colors">
-                    <Heart className="w-3.5 h-3.5" />
-                    {post.likes?.length || 0}
+                  <button
+                    type="button"
+                    onClick={() => handleLike(post.slug)}
+                    className={`flex items-center gap-1.5 text-xs transition-colors ${
+                      likeState[post.slug]?.liked ? "text-red-500" : "text-[var(--text-muted)] hover:text-red-400"
+                    }`}
+                  >
+                    <Heart className={`w-3.5 h-3.5 ${likeState[post.slug]?.liked ? "fill-red-500" : ""}`} />
+                    {likeState[post.slug]?.count ?? post.likes?.length ?? 0}
                   </button>
-                  <button className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--brand)] transition-colors">
+                  <Link
+                    href={`/blog/${post.slug}#comments`}
+                    className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--brand)] transition-colors"
+                  >
                     <MessageCircle className="w-3.5 h-3.5" />
                     {post.comments?.length || 0}
-                  </button>
+                  </Link>
                   <div className="flex-1" />
-                  <button className="text-[var(--text-muted)] hover:text-[var(--brand)] transition-colors">
-                    <Bookmark className="w-3.5 h-3.5" />
+                  <button
+                    type="button"
+                    onClick={() => handleSave(post.slug)}
+                    className={`transition-colors ${
+                      savedPosts[post.slug] ? "text-[var(--brand)]" : "text-[var(--text-muted)] hover:text-[var(--brand)]"
+                    }`}
+                    aria-label="Guardar post"
+                  >
+                    <Bookmark className={`w-3.5 h-3.5 ${savedPosts[post.slug] ? "fill-[var(--brand)]" : ""}`} />
                   </button>
                 </div>
               </motion.article>

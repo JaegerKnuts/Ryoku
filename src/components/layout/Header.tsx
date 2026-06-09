@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -16,10 +17,22 @@ const navLinks = [
 ];
 
 export function Header() {
+  const router = useRouter();
   const { data: session } = useSession();
   const { count } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    if (!q) return;
+    setSearchOpen(false);
+    setSearchQuery("");
+    router.push(`/shop?q=${encodeURIComponent(q)}`);
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -54,7 +67,7 @@ export function Header() {
               transition={{ duration: 0.3 }}
             >
               <Image
-                src="/logo.jpg"
+                src="/logo.svg"
                 alt="Ryoku"
                 width={36}
                 height={36}
@@ -81,12 +94,30 @@ export function Header() {
 
           {/* Actions */}
           <div className="flex items-center gap-4">
-            <button
-              aria-label="Buscar"
-              className="hidden md:flex w-9 h-9 items-center justify-center rounded-full hover:bg-[var(--surface)] transition-colors"
-            >
-              <Search className="w-4 h-4 text-[var(--text-secondary)]" />
-            </button>
+            {searchOpen ? (
+              <form onSubmit={handleSearch} className="hidden md:flex items-center gap-2">
+                <input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Buscar productos..."
+                  autoFocus
+                  className="w-44 px-3 py-2 rounded-full bg-[var(--surface)] border border-[var(--border)] text-sm focus:outline-none focus:border-[var(--brand)]"
+                />
+                <button type="button" onClick={() => setSearchOpen(false)} className="text-xs text-[var(--text-muted)]">
+                  Cancelar
+                </button>
+              </form>
+            ) : (
+              <button
+                type="button"
+                aria-label="Buscar"
+                onClick={() => setSearchOpen(true)}
+                className="hidden md:flex w-9 h-9 items-center justify-center rounded-full hover:bg-[var(--surface)] transition-colors"
+              >
+                <Search className="w-4 h-4 text-[var(--text-secondary)]" />
+              </button>
+            )}
             {session ? (
               <div className="hidden md:flex items-center gap-2">
                 <Link

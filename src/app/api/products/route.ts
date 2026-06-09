@@ -11,6 +11,11 @@ export async function GET(request: Request) {
 
   try {
     const where: Record<string, unknown> = { active: true };
+    const featured = searchParams.get("featured");
+
+    if (featured === "true") {
+      where.featured = true;
+    }
 
     if (category && category !== "todo") {
       if (category === "merch") {
