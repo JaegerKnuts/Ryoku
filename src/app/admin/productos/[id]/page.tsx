@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Trash2, Image as ImageIcon, Package } from "lucide-react";
 import Link from "next/link";
+import BlogImageField from "@/components/admin/blog/BlogImageField";
 
 interface Category {
   id: number;
@@ -342,29 +343,22 @@ export default function EditProducto() {
             <h2 className="text-lg font-semibold">Imágenes</h2>
           </div>
           
-          {/* Add image */}
-          <div className="flex gap-3 mb-4">
-            <input
-              type="url"
-              placeholder="URL de la imagen"
+          <div className="mb-4 p-4 rounded-lg border border-[var(--border)] bg-[var(--surface)]/30 space-y-3">
+            <BlogImageField
               value={newImageUrl}
-              onChange={(e) => setNewImageUrl(e.target.value)}
-              className="flex-1 px-4 py-2 border border-[var(--border)] rounded-md text-sm"
-            />
-            <input
-              type="text"
-              placeholder="Texto alternativo (opcional)"
-              value={newImageAlt}
-              onChange={(e) => setNewImageAlt(e.target.value)}
-              className="w-48 px-4 py-2 border border-[var(--border)] rounded-md text-sm"
+              onChange={setNewImageUrl}
+              alt={newImageAlt}
+              onAltChange={setNewImageAlt}
+              label="Nueva imagen"
             />
             <button
               type="button"
               onClick={addImage}
               disabled={!newImageUrl.trim()}
-              className="px-4 py-2 bg-[var(--surface)] border border-[var(--border)] rounded-md hover:bg-[var(--bg)] transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-[var(--border)] rounded-md hover:bg-[var(--surface)] transition-colors disabled:opacity-50"
             >
               <Plus className="w-4 h-4" />
+              Añadir a la galería
             </button>
           </div>
 

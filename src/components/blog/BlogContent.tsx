@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { ImageIcon } from "lucide-react";
 import { parseBlogContent } from "@/lib/blog-content";
 import type { BlogBlock } from "@/lib/blog-blocks";
 
@@ -23,40 +24,72 @@ function BlockImage({
   );
 }
 
-function renderBlock(block: BlogBlock, index: number) {
+function ImagePlaceholder({ label = "Imagen", compact = false }: { label?: string; compact?: boolean }) {
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-[var(--surface)] border-2 border-dashed border-[var(--border)]">
+      <ImageIcon className={compact ? "w-4 h-4 text-[var(--text-muted)]" : "w-6 h-6 text-[var(--text-muted)]"} />
+      <span className={`${compact ? "text-[8px]" : "text-[10px]"} text-[var(--text-muted)] uppercase tracking-wider`}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function spacing(compact: boolean, normal: string, tight: string) {
+  return compact ? tight : normal;
+}
+
+function renderBlock(block: BlogBlock, index: number, showPlaceholders: boolean, compact: boolean) {
+  const my = spacing(compact, "my-8", "my-3");
+  const mySm = spacing(compact, "my-6", "my-2");
+  const myMd = spacing(compact, "my-4", "my-2");
+
   switch (block.type) {
     case "hero":
       if (block.layout === "image-left" || block.layout === "image-right") {
         const imageFirst = block.layout === "image-left";
+        const showImage = block.image || showPlaceholders;
         return (
-          <div key={block.id || index} className="my-8 grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
-            {imageFirst && block.image && (
+          <div key={block.id || index} className={`${my} grid grid-cols-1 sm:grid-cols-2 gap-6 items-center`}>
+            {imageFirst && showImage && (
               <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-[var(--surface)]">
-                <BlockImage src={block.image} alt={block.imageAlt || "Portada"} sizes="(max-width: 640px) 100vw, 50vw" />
+                {block.image ? (
+                  <BlockImage src={block.image} alt={block.imageAlt || "Portada"} sizes="(max-width: 640px) 100vw, 50vw" />
+                ) : (
+                  <ImagePlaceholder label="Portada" compact={compact} />
+                )}
               </div>
             )}
             {block.subtitle && (
-              <p className="text-base sm:text-lg text-[var(--text-secondary)] leading-relaxed break-words">
+              <p className={`${compact ? "text-xs" : "text-base sm:text-lg"} text-[var(--text-secondary)] leading-relaxed break-words`}>
                 {block.subtitle}
               </p>
             )}
-            {!imageFirst && block.image && (
+            {!imageFirst && showImage && (
               <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-[var(--surface)]">
-                <BlockImage src={block.image} alt={block.imageAlt || "Portada"} sizes="(max-width: 640px) 100vw, 50vw" />
+                {block.image ? (
+                  <BlockImage src={block.image} alt={block.imageAlt || "Portada"} sizes="(max-width: 640px) 100vw, 50vw" />
+                ) : (
+                  <ImagePlaceholder label="Portada" compact={compact} />
+                )}
               </div>
             )}
           </div>
         );
       }
       return (
-        <div key={block.id || index} className="my-8">
-          {block.image && (
-            <div className="relative aspect-[16/9] rounded-xl overflow-hidden bg-[var(--surface)] mb-4">
-              <BlockImage src={block.image} alt={block.imageAlt || "Portada"} sizes="(max-width: 768px) 100vw, 768px" />
+        <div key={block.id || index} className={my}>
+          {(block.image || showPlaceholders) && (
+            <div className={`relative ${compact ? "aspect-[2/1]" : "aspect-[16/9]"} rounded-xl overflow-hidden bg-[var(--surface)] mb-4`}>
+              {block.image ? (
+                <BlockImage src={block.image} alt={block.imageAlt || "Portada"} sizes="(max-width: 768px) 100vw, 768px" />
+              ) : (
+                <ImagePlaceholder label="Portada" compact={compact} />
+              )}
             </div>
           )}
           {block.subtitle && (
-            <p className="text-base sm:text-lg text-[var(--text-secondary)] leading-relaxed break-words">
+            <p className={`${compact ? "text-xs" : "text-base sm:text-lg"} text-[var(--text-secondary)] leading-relaxed break-words`}>
               {block.subtitle}
             </p>
           )}
@@ -66,20 +99,20 @@ function renderBlock(block: BlogBlock, index: number) {
     case "heading":
       if (block.level === 3) {
         return (
-          <h3 key={block.id || index} className="text-lg font-semibold mt-8 mb-3 text-[var(--text)] break-words">
+          <h3 key={block.id || index} className={`${compact ? "text-sm mt-3 mb-1" : "text-lg mt-8 mb-3"} font-semibold text-[var(--text)] break-words`}>
             {block.text}
           </h3>
         );
       }
       return (
-        <h2 key={block.id || index} className="text-xl font-bold mt-10 mb-4 text-[var(--text)] break-words">
+        <h2 key={block.id || index} className={`${compact ? "text-base mt-4 mb-2" : "text-xl mt-10 mb-4"} font-bold text-[var(--text)] break-words`}>
           {block.text}
         </h2>
       );
 
     case "text":
       return (
-        <p key={block.id || index} className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4 break-words whitespace-pre-wrap">
+        <p key={block.id || index} className={`${compact ? "text-xs mb-2" : "text-sm mb-4"} text-[var(--text-secondary)] leading-relaxed break-words whitespace-pre-wrap`}>
           {block.text}
         </p>
       );
@@ -92,14 +125,16 @@ function renderBlock(block: BlogBlock, index: number) {
             ? "w-full max-w-2xl mx-auto"
             : "w-full max-w-md mx-auto";
       return (
-        <figure key={block.id || index} className={`my-8 ${sizeClass}`}>
-          <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-[var(--surface)]">
-            {block.url && (
+        <figure key={block.id || index} className={`${my} ${sizeClass}`}>
+          <div className={`relative ${compact ? "aspect-[3/2]" : "aspect-[4/3]"} rounded-xl overflow-hidden bg-[var(--surface)]`}>
+            {block.url ? (
               <BlockImage src={block.url} alt={block.alt || ""} sizes="(max-width: 768px) 100vw, 768px" />
-            )}
+            ) : showPlaceholders ? (
+              <ImagePlaceholder compact={compact} />
+            ) : null}
           </div>
           {block.caption && (
-            <figcaption className="text-xs text-[var(--text-muted)] mt-2 text-center">{block.caption}</figcaption>
+            <figcaption className={`${compact ? "text-[9px]" : "text-xs"} text-[var(--text-muted)] mt-2 text-center`}>{block.caption}</figcaption>
           )}
         </figure>
       );
@@ -107,19 +142,28 @@ function renderBlock(block: BlogBlock, index: number) {
 
     case "image-text": {
       const imageFirst = block.layout === "left";
+      const showImage = block.url || showPlaceholders;
       return (
-        <div key={block.id || index} className="my-8 grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
-          {imageFirst && block.url && (
-            <div className="relative aspect-square rounded-xl overflow-hidden bg-[var(--surface)]">
-              <BlockImage src={block.url} alt={block.alt || ""} sizes="(max-width: 640px) 100vw, 50vw" />
+        <div key={block.id || index} className={`${my} grid grid-cols-1 sm:grid-cols-2 gap-6 items-start`}>
+          {imageFirst && showImage && (
+            <div className={`relative ${compact ? "aspect-[4/3]" : "aspect-square"} rounded-xl overflow-hidden bg-[var(--surface)]`}>
+              {block.url ? (
+                <BlockImage src={block.url} alt={block.alt || ""} sizes="(max-width: 640px) 100vw, 50vw" />
+              ) : (
+                <ImagePlaceholder compact={compact} />
+              )}
             </div>
           )}
-          <p className="text-sm text-[var(--text-secondary)] leading-relaxed break-words whitespace-pre-wrap">
+          <p className={`${compact ? "text-xs" : "text-sm"} text-[var(--text-secondary)] leading-relaxed break-words whitespace-pre-wrap`}>
             {block.text}
           </p>
-          {!imageFirst && block.url && (
-            <div className="relative aspect-square rounded-xl overflow-hidden bg-[var(--surface)]">
-              <BlockImage src={block.url} alt={block.alt || ""} sizes="(max-width: 640px) 100vw, 50vw" />
+          {!imageFirst && showImage && (
+            <div className={`relative ${compact ? "aspect-[4/3]" : "aspect-square"} rounded-xl overflow-hidden bg-[var(--surface)]`}>
+              {block.url ? (
+                <BlockImage src={block.url} alt={block.alt || ""} sizes="(max-width: 640px) 100vw, 50vw" />
+              ) : (
+                <ImagePlaceholder compact={compact} />
+              )}
             </div>
           )}
         </div>
@@ -128,16 +172,20 @@ function renderBlock(block: BlogBlock, index: number) {
 
     case "two-images":
       return (
-        <div key={block.id || index} className="my-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div key={block.id || index} className={`${my} grid grid-cols-1 sm:grid-cols-2 gap-4`}>
           {[block.left, block.right].map((img, i) => (
             <figure key={i}>
-              {img.url && (
-                <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-[var(--surface)]">
-                  <BlockImage src={img.url} alt={img.alt || ""} sizes="(max-width: 640px) 100vw, 50vw" />
+              {(img.url || showPlaceholders) && (
+                <div className={`relative ${compact ? "aspect-[4/3]" : "aspect-[4/3]"} rounded-xl overflow-hidden bg-[var(--surface)]`}>
+                  {img.url ? (
+                    <BlockImage src={img.url} alt={img.alt || ""} sizes="(max-width: 640px) 100vw, 50vw" />
+                  ) : (
+                    <ImagePlaceholder compact={compact} />
+                  )}
                 </div>
               )}
               {img.caption && (
-                <figcaption className="text-xs text-[var(--text-muted)] mt-2">{img.caption}</figcaption>
+                <figcaption className={`${compact ? "text-[9px]" : "text-xs"} text-[var(--text-muted)] mt-2`}>{img.caption}</figcaption>
               )}
             </figure>
           ))}
@@ -148,34 +196,37 @@ function renderBlock(block: BlogBlock, index: number) {
       return (
         <div
           key={block.id || index}
-          className={`my-8 grid gap-3 ${
+          className={`${my} grid gap-3 ${
             block.columns === 3 ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"
           }`}
         >
-          {block.images
-            .filter((img) => img.url)
-            .map((img, i) => (
-              <figure key={i}>
-                <div className="relative aspect-square rounded-xl overflow-hidden bg-[var(--surface)]">
+          {(showPlaceholders ? block.images : block.images.filter((img) => img.url)).map((img, i) => (
+            <figure key={i}>
+              <div className={`relative ${compact ? "aspect-[4/3]" : "aspect-square"} rounded-xl overflow-hidden bg-[var(--surface)]`}>
+                {img.url ? (
                   <BlockImage src={img.url} alt={img.alt || ""} sizes="(max-width: 640px) 50vw, 33vw" />
-                </div>
-                {img.caption && (
-                  <figcaption className="text-xs text-[var(--text-muted)] mt-1.5">{img.caption}</figcaption>
+                ) : (
+                  <ImagePlaceholder compact={compact} />
                 )}
-              </figure>
-            ))}
+              </div>
+              {img.caption && (
+                <figcaption className={`${compact ? "text-[9px]" : "text-xs"} text-[var(--text-muted)] mt-1.5`}>{img.caption}</figcaption>
+              )}
+            </figure>
+          ))}
         </div>
       );
 
     case "quote":
       return (
-        <blockquote
-          key={block.id || index}
-          className="my-8 pl-5 border-l-4 border-[var(--brand)] py-2"
-        >
-          <p className="text-base italic text-[var(--text)] leading-relaxed break-words">&ldquo;{block.text}&rdquo;</p>
+        <blockquote key={block.id || index} className={`${my} pl-5 border-l-4 border-[var(--brand)] py-2`}>
+          <p className={`${compact ? "text-xs" : "text-base"} italic text-[var(--text)] leading-relaxed break-words`}>
+            &ldquo;{block.text}&rdquo;
+          </p>
           {block.author && (
-            <cite className="block mt-2 text-xs text-[var(--text-muted)] not-italic">— {block.author}</cite>
+            <cite className={`block mt-2 ${compact ? "text-[9px]" : "text-xs"} text-[var(--text-muted)] not-italic`}>
+              — {block.author}
+            </cite>
           )}
         </blockquote>
       );
@@ -188,27 +239,24 @@ function renderBlock(block: BlogBlock, index: number) {
       };
       const labels = { tip: "Consejo", info: "Info", warning: "Aviso" };
       return (
-        <div
-          key={block.id || index}
-          className={`my-6 p-4 rounded-xl border ${styles[block.variant]}`}
-        >
+        <div key={block.id || index} className={`${mySm} p-4 rounded-xl border ${styles[block.variant]}`}>
           <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--brand)]">
             {labels[block.variant]}
           </span>
-          <p className="text-sm mt-2 leading-relaxed break-words whitespace-pre-wrap">{block.text}</p>
+          <p className={`${compact ? "text-xs" : "text-sm"} mt-2 leading-relaxed break-words whitespace-pre-wrap`}>{block.text}</p>
         </div>
       );
     }
 
     case "divider":
-      return <div key={block.id || index} className="my-8 h-px bg-[var(--border)]" />;
+      return <div key={block.id || index} className={`${mySm} h-px bg-[var(--border)]`} />;
 
     case "list":
       if (block.style === "numbered") {
         return (
-          <ol key={block.id || index} className="my-4 space-y-2 list-decimal list-inside">
+          <ol key={block.id || index} className={`${myMd} space-y-2 list-decimal list-inside`}>
             {block.items.filter(Boolean).map((item, j) => (
-              <li key={j} className="text-sm text-[var(--text-secondary)] leading-relaxed break-words">
+              <li key={j} className={`${compact ? "text-xs" : "text-sm"} text-[var(--text-secondary)] leading-relaxed break-words`}>
                 {item}
               </li>
             ))}
@@ -216,9 +264,9 @@ function renderBlock(block: BlogBlock, index: number) {
         );
       }
       return (
-        <ul key={block.id || index} className="space-y-2 my-4">
+        <ul key={block.id || index} className={`space-y-2 ${myMd}`}>
           {block.items.filter(Boolean).map((item, j) => (
-            <li key={j} className="flex items-start gap-2 text-sm text-[var(--text-secondary)] leading-relaxed min-w-0">
+            <li key={j} className={`flex items-start gap-2 ${compact ? "text-xs" : "text-sm"} text-[var(--text-secondary)] leading-relaxed min-w-0`}>
               <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand)] mt-1.5 flex-shrink-0" />
               <span className="break-words">{item}</span>
             </li>
@@ -228,7 +276,7 @@ function renderBlock(block: BlogBlock, index: number) {
 
     case "glossary":
       return (
-        <div key={block.id || index} className="my-6 rounded-xl border border-[var(--border)] overflow-hidden">
+        <div key={block.id || index} className={`${mySm} rounded-xl border border-[var(--border)] overflow-hidden`}>
           {block.items
             .filter((item) => item.term || item.definition)
             .map((item, j) => (
@@ -236,10 +284,10 @@ function renderBlock(block: BlogBlock, index: number) {
                 key={j}
                 className="flex items-start gap-3 px-4 py-3 border-b border-[var(--border)] last:border-0 min-w-0"
               >
-                <span className="text-sm font-bold text-[var(--brand)] flex-shrink-0 mt-0.5 break-words">
+                <span className={`${compact ? "text-xs" : "text-sm"} font-bold text-[var(--brand)] flex-shrink-0 mt-0.5 break-words`}>
                   {item.term}
                 </span>
-                <span className="text-sm text-[var(--text-secondary)] break-words min-w-0">
+                <span className={`${compact ? "text-xs" : "text-sm"} text-[var(--text-secondary)] break-words min-w-0`}>
                   {item.definition}
                 </span>
               </div>
@@ -249,8 +297,8 @@ function renderBlock(block: BlogBlock, index: number) {
 
     case "table":
       return (
-        <div key={block.id || index} className="overflow-x-auto my-6 rounded-xl border border-[var(--border)]">
-          <table className="w-full text-sm">
+        <div key={block.id || index} className={`overflow-x-auto ${mySm} rounded-xl border border-[var(--border)]`}>
+          <table className={`w-full ${compact ? "text-[10px]" : "text-sm"}`}>
             <thead>
               <tr className="bg-[var(--surface)]">
                 {block.headers.map((h, j) => (
@@ -265,7 +313,7 @@ function renderBlock(block: BlogBlock, index: number) {
                 <tr key={j} className="border-t border-[var(--border)]">
                   {row.map((cell, k) => (
                     <td key={k} className="px-4 py-3 text-[var(--text-secondary)] break-words">
-                      {cell}
+                      {cell || (showPlaceholders ? "…" : "")}
                     </td>
                   ))}
                 </tr>
@@ -277,11 +325,11 @@ function renderBlock(block: BlogBlock, index: number) {
 
     case "columns":
       return (
-        <div key={block.id || index} className="my-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <p className="text-sm text-[var(--text-secondary)] leading-relaxed break-words whitespace-pre-wrap">
+        <div key={block.id || index} className={`${my} grid grid-cols-1 sm:grid-cols-2 gap-6`}>
+          <p className={`${compact ? "text-xs" : "text-sm"} text-[var(--text-secondary)] leading-relaxed break-words whitespace-pre-wrap`}>
             {block.left}
           </p>
-          <p className="text-sm text-[var(--text-secondary)] leading-relaxed break-words whitespace-pre-wrap">
+          <p className={`${compact ? "text-xs" : "text-sm"} text-[var(--text-secondary)] leading-relaxed break-words whitespace-pre-wrap`}>
             {block.right}
           </p>
         </div>
@@ -294,10 +342,16 @@ function renderBlock(block: BlogBlock, index: number) {
 
 interface BlogContentProps {
   content: string | null | undefined;
+  showPlaceholders?: boolean;
+  compact?: boolean;
 }
 
-export default function BlogContent({ content }: BlogContentProps) {
+export default function BlogContent({ content, showPlaceholders = false, compact = false }: BlogContentProps) {
   const blocks = parseBlogContent(content);
   if (blocks.length === 0) return null;
-  return <>{blocks.map((block, i) => renderBlock(block, i))}</>;
+  return (
+    <>
+      {blocks.map((block, i) => renderBlock(block, i, showPlaceholders, compact))}
+    </>
+  );
 }

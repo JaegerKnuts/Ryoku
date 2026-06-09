@@ -23,6 +23,7 @@ import {
 import { parseBlogContent, serializeBlogContent } from "@/lib/blog-content";
 import BlogContent from "@/components/blog/BlogContent";
 import BlockEditor from "./BlockEditor";
+import TemplatePreviewCard from "./TemplatePreviewCard";
 
 interface BlogEditorProps {
   value: string;
@@ -40,6 +41,7 @@ export default function BlogEditor({ value, onChange, postTitle }: BlogEditorPro
   const [showPalette, setShowPalette] = useState(true);
   const [showTemplates, setShowTemplates] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [templatePreviewId, setTemplatePreviewId] = useState<string | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(blocks[0]?.id || null);
 
@@ -143,18 +145,20 @@ export default function BlogEditor({ value, onChange, postTitle }: BlogEditorPro
       </div>
 
       {showTemplates && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-4 rounded-xl border border-[var(--border)] bg-[var(--surface)]/40">
-          {BLOG_TEMPLATES.map((template) => (
-            <button
-              key={template.id}
-              type="button"
-              onClick={() => applyTemplate(template.id)}
-              className="text-left p-4 rounded-lg border border-[var(--border)] bg-[var(--bg)] hover:border-[var(--brand)] transition-colors"
-            >
-              <p className="text-sm font-semibold mb-1">{template.name}</p>
-              <p className="text-xs text-[var(--text-secondary)]">{template.description}</p>
-            </button>
-          ))}
+        <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface)]/40 space-y-3">
+          <p className="text-xs text-[var(--text-secondary)]">
+            Vista previa en vivo de cada plantilla. Las zonas punteadas son espacios para imágenes que añadirás después.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {BLOG_TEMPLATES.map((template) => (
+              <TemplatePreviewCard
+                key={template.id}
+                template={template}
+                onApply={() => applyTemplate(template.id)}
+                onExpand={() => setTemplatePreviewId(template.id)}
+              />
+            ))}
+          </div>
         </div>
       )}
 
@@ -255,25 +259,66 @@ export default function BlogEditor({ value, onChange, postTitle }: BlogEditorPro
         )}
       </div>
 
-      {previewOpen && (
+      {(previewOpen || templatePreviewId) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
           <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-xl bg-[var(--bg)] border border-[var(--border)] shadow-2xl">
             <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-[var(--border)] bg-[var(--bg)]">
-              <h3 className="text-sm font-bold uppercase tracking-wider">Vista previa</h3>
+              <div>
+                <h3 className="text-sm font-bold uppercase tracking-wider">
+                  {templatePreviewId ? "Vista previa de plantilla" : "Vista previa del post"}
+                </h3>
+                {templatePreviewId && (
+                  <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                    {BLOG_TEMPLATES.find((t) => t.id === templatePreviewId)?.name}
+                  </p>
+                )}
+              </div>
               <button
                 type="button"
-                onClick={() => setPreviewOpen(false)}
+                onClick={() => {
+                  setPreviewOpen(false);
+                  setTemplatePreviewId(null);
+                }}
                 className="p-2 rounded-md hover:bg-[var(--surface)] transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 sm:p-8">
-              {postTitle && (
+              {postTitle && !templatePreviewId && (
                 <h1 className="text-2xl font-bold mb-6 break-words">{postTitle}</h1>
               )}
-              <BlogContent content={serializeBlogContent(blocks)} />
+              <BlogContent
+                content={
+                  templatePreviewId
+                    ? serializeBlogContent(BLOG_TEMPLATES.find((t) => t.id === templatePreviewId)?.blocks || [])
+                    : serializeBlogContent(blocks)
+                }
+                showPlaceholders={Boolean(templatePreviewId)}
+              />
             </div>
+            {templatePreviewId && (
+              <div className="sticky bottom-0 flex gap-3 px-6 py-4 border-t border-[var(--border)] bg-[var(--bg)]">
+                <button
+                  type="button"
+                  onClick={() => setTemplatePreviewId(null)}
+                  className="flex-1 px-4 py-2.5 text-sm border border-[var(--border)] rounded-md hover:bg-[var(--surface)] transition-colors"
+                >
+                  Cerrar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    applyTemplate(templatePreviewId);
+                    setTemplatePreviewId(null);
+                  }}
+                  className="flex-1 px-4 py-2.5 text-sm font-semibold uppercase tracking-wider text-white"
+                  style={{ background: "var(--brand)", borderRadius: "var(--radius)" }}
+                >
+                  Usar esta plantilla
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
