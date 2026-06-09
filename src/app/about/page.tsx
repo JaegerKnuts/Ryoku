@@ -2,28 +2,29 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { Leaf, Flame, Shirt, Pen } from "lucide-react";
+import Link from "next/link";
+import { BookOpen, Shirt, Wrench, Sparkles } from "lucide-react";
 
 const values = [
   {
-    icon: Leaf,
-    title: "Cultura real",
-    description: "No somos una marca de humo. Vivimos la cultura cannábica y la expresamos en cada pieza.",
+    icon: BookOpen,
+    title: "Archivo especializado",
+    description: "No somos una tienda genérica. Construimos un archivo independiente sobre hash culture con contenido real, explicado sin humo.",
   },
   {
-    icon: Flame,
-    title: "Calidad sin concesiones",
-    description: "Cada producto pasa por nuestras manos. Desde el diseño hasta el empaquetado, controlamos todo.",
+    icon: Sparkles,
+    title: "Conocimiento primero",
+    description: "La tienda es una extensión del contenido, no el centro. Cada producto está vinculado a un artículo que explica su uso y por qué tiene sentido.",
   },
   {
     icon: Shirt,
-    title: "Streetwear con raíces",
-    description: "Diseños que cuentan historias. Ropa que no encontrarás en ningún otro sitio.",
+    title: "Merch con identidad",
+    description: "Camisetas, sudaderas, pegatinas y drops limitados. Ropa que cuenta historias y no encontrarás en ningún otro sitio.",
   },
   {
-    icon: Pen,
-    title: "Contenido propio",
-    description: "Nuestro blog es una extensión de la marca: guías, recetas y conocimiento real compartido.",
+    icon: Wrench,
+    title: "Herramientas seleccionadas",
+    description: "Seleccionamos accesorios útiles para consumir, conservar y entender mejor el producto. Nada de dropshipping sin criterio.",
   },
 ];
 
@@ -41,14 +42,13 @@ export default function AboutPage() {
             Sobre Ryoku
           </p>
           <h1 className="text-4xl sm:text-6xl font-bold tracking-tight mb-6 leading-tight">
-            Más que una marca.
-            <br />
-            <span className="text-gradient">Un estilo de vida.</span>
+            Archivo independiente<br />
+            <span className="text-gradient">sobre hash culture</span>
           </h1>
           <p className="text-lg text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed">
-            Ryoku nace de la fusión entre el streetwear y la cultura del fumador.
-            Creamos ropa, accesorios y contenido para quienes viven esta cultura sin complejos.
-            Todo diseñado y producido por nosotros, desde España.
+            RYØKU es un archivo independiente sobre hash culture que también desarrolla merch
+            y selecciona herramientas útiles para consumir, conservar y entender mejor el producto.
+            Todo desde España, con criterio y sin etiquetas vacías.
           </p>
         </motion.div>
       </section>
@@ -124,22 +124,22 @@ export default function AboutPage() {
         >
           <h2 className="text-2xl font-bold mb-3">¿Quieres saber más?</h2>
           <p className="text-sm text-[var(--text-secondary)] mb-6">
-            Síguenos en redes o escríbenos directamente. Siempre respondemos.
+            Síguenos en redes, explora el archivo o escríbenos directamente.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/blog"
+              className="px-6 py-3 bg-[var(--brand)] text-black font-semibold text-sm rounded-full hover:bg-[var(--brand-hover)] transition-colors"
+            >
+              Explorar el archivo
+            </Link>
             <a
               href="https://instagram.com/ryoku"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3 bg-[var(--brand)] text-black font-semibold text-sm rounded-full hover:bg-[var(--brand-hover)] transition-colors"
-            >
-              @ryoku en Instagram
-            </a>
-            <a
-              href="/contacto"
               className="px-6 py-3 border border-[var(--border)] text-sm rounded-full text-[var(--text-secondary)] hover:border-[var(--brand)] hover:text-[var(--text)] transition-all"
             >
-              Contacto
+              @ryoku en Instagram
             </a>
           </div>
         </motion.div>

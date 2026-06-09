@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, MessageCircle, Bookmark, Loader2 } from "lucide-react";
+import { Heart, MessageCircle, Bookmark, Loader2, ArrowRight } from "lucide-react";
 
 interface BlogPost {
   id: number;
@@ -20,7 +20,7 @@ interface BlogPost {
   comments: { id: number }[];
 }
 
-const tags = ["Todo", "Cultivo", "Recetas", "Cuidados", "Genética", "Novedades"];
+const tags = ["Todo", "Empieza aquí", "Extracciones", "Materia prima", "Calidad y clasificación", "Curado y conservación", "Consumo y herramientas", "Glosario"];
 
 export default function BlogPage() {
   const [activeTag, setActiveTag] = useState("Todo");
@@ -81,14 +81,22 @@ export default function BlogPage() {
         className="mb-10"
       >
         <p className="text-xs font-mono tracking-[0.2em] uppercase text-[var(--brand)] mb-2">
-          Blog
+          RYØKU Hash Archive
         </p>
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-2">
-          Cultura sin filtros.
+        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-3">
+          RYØKU Hash Archive
         </h1>
-        <p className="text-[var(--text-secondary)] text-sm max-w-lg">
-          Guías, recetas, tips de cultivo y todo lo que necesitas saber. Contenido real, sin rodeos.
+        <p className="text-[var(--text-secondary)] text-sm max-w-2xl leading-relaxed mb-6">
+          Una guía en constante evolución para entender qué estás consumiendo, cómo se obtiene y qué significa realmente cada término. Sin repetir etiquetas vacías. Sin asumir que todo el mundo sabe de lo que se está hablando. Desde los conceptos básicos hasta los matices que separan dos extracciones aparentemente similares.
         </p>
+        <button
+          onClick={() => setActiveTag("Empieza aquí")}
+          className="group inline-flex items-center gap-2 px-5 py-2.5 text-white font-semibold text-xs uppercase tracking-[0.1em] transition-all hover:opacity-90"
+          style={{ background: "var(--brand)", borderRadius: "var(--radius)" }}
+        >
+          Empezar desde cero
+          <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+        </button>
       </motion.div>
 
       {/* Tags filter */}

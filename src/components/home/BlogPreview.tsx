@@ -8,48 +8,48 @@ import { Heart, MessageCircle, ArrowRight } from "lucide-react";
 const mockPosts = [
   {
     id: 1,
-    slug: "como-curar-cogollos",
-    title: "Cómo curar cogollos correctamente",
+    slug: "que-es-realmente-el-hash",
+    title: "¿Qué es realmente el hash?",
     image: "https://images.unsplash.com/photo-1503262028195-93c528f03218?w=600&h=600&fit=crop",
     likes: 234,
     comments: 18,
   },
   {
     id: 2,
-    slug: "mejores-fertilizantes-organicos",
-    title: "Los 5 mejores fertilizantes orgánicos",
+    slug: "extraccion-dry-sift",
+    title: "Extracción de dry sift: guía completa",
     image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&h=600&fit=crop",
     likes: 187,
     comments: 12,
   },
   {
     id: 3,
-    slug: "indoor-vs-outdoor",
-    title: "Indoor vs Outdoor: pros y contras",
+    slug: "curar-vs-mutar-hash",
+    title: "Curar vs. mutar hash: no es lo mismo",
     image: "https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=600&h=600&fit=crop",
     likes: 312,
     comments: 27,
   },
   {
     id: 4,
-    slug: "guia-esquejes",
-    title: "Guía completa de esquejes",
+    slug: "dry-sift-o-iceolator",
+    title: "¿Dry sift o iceolator?",
     image: "https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=600&h=600&fit=crop",
     likes: 156,
     comments: 9,
   },
   {
     id: 5,
-    slug: "nutrientes-fase-floracion",
-    title: "Nutrientes en fase de floración",
+    slug: "full-melt-vs-full-spectrum",
+    title: "Full melt vs. full spectrum",
     image: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=600&h=600&fit=crop",
     likes: 201,
     comments: 14,
   },
   {
     id: 6,
-    slug: "como-hacer-mantequilla-cannabica",
-    title: "Cómo hacer mantequilla cannábica",
+    slug: "micrajes-del-hash",
+    title: "Micrajes del hash: lo que significan",
     image: "https://images.unsplash.com/photo-1495214783159-3503fd1b572d?w=600&h=600&fit=crop",
     likes: 445,
     comments: 38,
@@ -69,10 +69,10 @@ export function BlogPreview() {
       >
         <div>
           <p className="text-xs uppercase tracking-[0.3em] mb-2 font-medium" style={{ color: 'var(--brand)' }}>
-            Blog
+            Hash Archive
           </p>
           <h2 className="text-5xl sm:text-6xl uppercase tracking-tight" style={{ fontFamily: 'var(--font-bebas), Impact, sans-serif' }}>
-            Cultura sin filtros.
+            Últimos artículos
           </h2>
         </div>
         <Link
@@ -132,7 +132,7 @@ export function BlogPreview() {
           href="/blog"
           className="inline-flex items-center gap-2 text-sm font-medium text-[var(--brand)]"
         >
-          Ver todo el blog
+          Ver todo el archivo
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>

@@ -27,8 +27,8 @@ interface Pagination {
 
 const categories = [
   { slug: "todo", label: "Todo" },
-  { slug: "ropa", label: "Ropa" },
-  { slug: "parafernalia", label: "Parafernalia" },
+  { slug: "merch", label: "Merch" },
+  { slug: "selected-gear", label: "Selected Gear" },
 ];
 
 const sortOptions = [
@@ -234,7 +234,7 @@ export default function ShopPage() {
                       </div>
                     </div>
                     <p className="text-[10px] font-mono uppercase tracking-[0.15em] text-[var(--text-muted)] mb-1">
-                      {product.category?.name || (product.productType === "ROPA" ? "Ropa" : "Parafernalia")}
+                      {product.category?.name || (product.productType === "MERCH" ? "Merch" : "Selected Gear")}
                     </p>
                     <h3 className="text-sm font-medium leading-tight mb-1 group-hover:text-[var(--brand)] transition-colors">
                       {product.name}

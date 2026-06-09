@@ -257,7 +257,7 @@ export default function ProductPage() {
           transition={{ duration: 0.6, delay: 0.1 }}
         >
           <p className="text-xs font-mono tracking-[0.2em] uppercase text-[var(--brand)] mb-2">
-            {product.category?.name || (product.productType === "ROPA" ? "Ropa" : "Parafernalia")}
+            {product.category?.name || (product.productType === "MERCH" ? "Merch" : "Selected Gear")}
           </p>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
             {product.name}

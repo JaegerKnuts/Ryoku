@@ -6,16 +6,16 @@ import Image from "next/image";
 
 const categories = [
   {
-    slug: "ropa",
-    title: "Streetwear",
-    subtitle: "Sudaderas, tees, gorras",
+    slug: "merch",
+    title: "RYOKU MERCH",
+    subtitle: "Camisetas, sudaderas, drops limitados",
     image: "https://images.unsplash.com/photo-1523398002811-999ca8dec234?w=800&h=1000&fit=crop",
     count: 24,
   },
   {
-    slug: "parafernalia",
-    title: "Smoking Gear",
-    subtitle: "Bandejas, grinders, papers",
+    slug: "selected-gear",
+    title: "RYOKU SELECTED GEAR",
+    subtitle: "Grinders, tarros, herramientas de conservación",
     image: "https://images.unsplash.com/photo-1560343090-f0409e92791a?w=800&h=1000&fit=crop",
     count: 18,
   },
@@ -35,7 +35,7 @@ export function CategoriesSection() {
           Categorías
         </p>
         <h2 className="text-5xl sm:text-6xl uppercase tracking-tight" style={{ fontFamily: 'var(--font-bebas), Impact, sans-serif' }}>
-          Dos mundos, una marca.
+          Merch y herramientas.
         </h2>
       </motion.div>
 
@@ -67,7 +67,7 @@ export function CategoriesSection() {
 
               {/* Content */}
               <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
-                <h3 className="text-3xl sm:text-4xl text-white uppercase tracking-tight mb-1" style={{ fontFamily: 'var(--font-bebas), Impact, sans-serif' }}>
+                <h3 className="text-2xl sm:text-3xl text-white uppercase tracking-tight mb-1" style={{ fontFamily: 'var(--font-bebas), Impact, sans-serif' }}>
                   {cat.title}
                 </h3>
                 <p className="text-sm text-white/70">

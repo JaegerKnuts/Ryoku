@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, MessageCircle, Share2, Bookmark, ChevronLeft, Send, Loader2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, Bookmark, ChevronLeft, Send, Loader2, ArrowUpRight, Package } from "lucide-react";
 
 interface BlogPost {
   id: number;
@@ -21,9 +21,150 @@ interface BlogPost {
   comments: { id: number; text: string; createdAt: string; user: { name: string } }[];
 }
 
-function parseContent(content: string): string[] {
-  // Split content by newlines to create blocks
-  return content.split('\n').filter(line => line.trim() !== '');
+type ContentBlock =
+  | { type: "h2"; text: string }
+  | { type: "h3"; text: string }
+  | { type: "p"; text: string }
+  | { type: "ul"; items: string[] }
+  | { type: "glossary"; term: string; definition: string }
+  | { type: "table"; headers: string[]; rows: string[][] }
+  | { type: "hr" };
+
+function parseContent(content: string): ContentBlock[] {
+  const lines = content.split('\n');
+  const blocks: ContentBlock[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i].trim();
+
+    if (!line) {
+      i++;
+      continue;
+    }
+
+    if (line.startsWith("## ")) {
+      blocks.push({ type: "h2", text: line.replace("## ", "") });
+      i++;
+      continue;
+    }
+
+    if (line.startsWith("### ")) {
+      blocks.push({ type: "h3", text: line.replace("### ", "") });
+      i++;
+      continue;
+    }
+
+    if (line === "---") {
+      blocks.push({ type: "hr" });
+      i++;
+      continue;
+    }
+
+    if (line.startsWith("|") && lines[i + 1]?.startsWith("|")) {
+      const headers = line.split("|").filter(Boolean).map(h => h.trim());
+      i += 2; // skip the |---| line
+      const rows: string[][] = [];
+      while (i < lines.length && lines[i].trim().startsWith("|")) {
+        rows.push(lines[i].split("|").filter(Boolean).map(c => c.trim()));
+        i++;
+      }
+      blocks.push({ type: "table", headers, rows });
+      continue;
+    }
+
+    if (line.startsWith("**") && line.includes("** - ")) {
+      const match = line.match(/\*\*(.+?)\*\*\s*-\s*(.+)/);
+      if (match) {
+        blocks.push({ type: "glossary", term: match[1], definition: match[2] });
+        i++;
+        continue;
+      }
+    }
+
+    if (line.startsWith("- ")) {
+      const items: string[] = [];
+      while (i < lines.length && lines[i].trim().startsWith("- ")) {
+        items.push(lines[i].trim().replace("- ", ""));
+        i++;
+      }
+      blocks.push({ type: "ul", items });
+      continue;
+    }
+
+    blocks.push({ type: "p", text: line });
+    i++;
+  }
+
+  return blocks;
+}
+
+function renderContent(block: ContentBlock, index: number) {
+  switch (block.type) {
+    case "h2":
+      return (
+        <h2 key={index} className="text-xl font-bold mt-10 mb-4 text-[var(--text)]">
+          {block.text}
+        </h2>
+      );
+    case "h3":
+      return (
+        <h3 key={index} className="text-lg font-semibold mt-8 mb-3 text-[var(--text)]">
+          {block.text}
+        </h3>
+      );
+    case "p":
+      return (
+        <p key={index} className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
+          {block.text}
+        </p>
+      );
+    case "ul":
+      return (
+        <ul key={index} className="space-y-2 my-4">
+          {block.items.map((item, j) => (
+            <li key={j} className="flex items-start gap-2 text-sm text-[var(--text-secondary)] leading-relaxed">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand)] mt-1.5 flex-shrink-0" />
+              {item}
+            </li>
+          ))}
+        </ul>
+      );
+    case "glossary":
+      return (
+        <div key={index} className="flex items-start gap-3 py-3 border-b border-[var(--border)] last:border-0">
+          <span className="text-sm font-bold text-[var(--brand)] flex-shrink-0 mt-0.5">{block.term}</span>
+          <span className="text-sm text-[var(--text-secondary)]">{block.definition}</span>
+        </div>
+      );
+    case "table":
+      return (
+        <div key={index} className="overflow-x-auto my-6 rounded-xl border border-[var(--border)]">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-[var(--surface)]">
+                {block.headers.map((h, j) => (
+                  <th key={j} className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {block.rows.map((row, j) => (
+                <tr key={j} className="border-t border-[var(--border)]">
+                  {row.map((cell, k) => (
+                    <td key={k} className="px-4 py-3 text-[var(--text-secondary)]">{cell}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    case "hr":
+      return <div key={index} className="my-8 h-[1px] bg-[var(--border)]" />;
+    default:
+      return null;
+  }
 }
 
 export default function BlogPostPage() {
@@ -92,7 +233,7 @@ export default function BlogPostPage() {
       <div className="pt-24 pb-16 px-4 text-center">
         <p className="text-[var(--text-muted)]">{error || "Post no encontrado"}</p>
         <Link href="/blog" className="text-[var(--brand)] hover:underline mt-4 inline-block">
-          Volver al blog
+          Volver al archivo
         </Link>
       </div>
     );
@@ -113,7 +254,7 @@ export default function BlogPostPage() {
           className="inline-flex items-center gap-1.5 text-sm text-[var(--text-muted)] hover:text-[var(--brand)] transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
-          Blog
+          Hash Archive
         </Link>
       </motion.div>
 
@@ -133,7 +274,6 @@ export default function BlogPostPage() {
             sizes="(max-width: 768px) 100vw, 768px"
             priority
           />
-          {/* Dots */}
           {images.length > 1 && (
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
               {images.map((_, i) => (
@@ -203,6 +343,11 @@ export default function BlogPostPage() {
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight leading-tight">
           {post.title}
         </h1>
+        {post.excerpt && (
+          <p className="text-sm text-[var(--text-secondary)] mt-3 leading-relaxed">
+            {post.excerpt}
+          </p>
+        )}
       </motion.div>
 
       {/* Content */}
@@ -212,37 +357,30 @@ export default function BlogPostPage() {
         transition={{ delay: 0.25 }}
         className="mb-12"
       >
-        {contentBlocks.map((block: string, i: number) => {
-          if (block.startsWith("## ")) {
-            return (
-              <h2
-                key={i}
-                className="text-xl font-bold mt-8 mb-3 text-[var(--text)]"
-              >
-                {block.replace("## ", "")}
-              </h2>
-            );
-          }
-          if (block.startsWith("- ")) {
-            const items = block.split("\n");
-            return (
-              <ul key={i} className="space-y-2 my-4">
-                {items.map((item: string, j: number) => (
-                  <li key={j} className="flex items-start gap-2 text-sm text-[var(--text-secondary)] leading-relaxed">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand)] mt-1.5 flex-shrink-0" />
-                    {item.replace("- ", "")}
-                  </li>
-                ))}
-              </ul>
-            );
-          }
-          return (
-            <p key={i} className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-              {block}
-            </p>
-          );
-        })}
+        {contentBlocks.map((block, i) => renderContent(block, i))}
       </motion.article>
+
+      {/* Productos útiles */}
+      {post.tag && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="mb-12 p-6 rounded-xl border border-[var(--border)] bg-[var(--surface)]"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <Package className="w-4 h-4 text-[var(--brand)]" />
+            <h3 className="text-sm font-bold uppercase tracking-wider">Productos relacionados</h3>
+          </div>
+          <Link
+            href={`/shop`}
+            className="group inline-flex items-center gap-1.5 text-sm text-[var(--brand)] hover:underline"
+          >
+            Ver productos recomendados en la tienda
+            <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </motion.div>
+      )}
 
       {/* Comments */}
       <section className="border-t border-[var(--border)] pt-8">

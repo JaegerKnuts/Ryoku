@@ -53,10 +53,10 @@ export function FeaturedProducts() {
       >
         <div>
           <p className="text-xs uppercase tracking-[0.3em] mb-2 font-medium" style={{ color: 'var(--brand)' }}>
-            Catálogo
+            Tienda
           </p>
           <h2 className="text-5xl sm:text-6xl uppercase tracking-tight" style={{ fontFamily: 'var(--font-bebas), Impact, sans-serif' }}>
-            Destacados
+            Productos seleccionados
           </h2>
         </div>
         <Link

@@ -81,7 +81,7 @@ model Product {
   price         Decimal
   comparePrice  Decimal?
   categoryId    Int
-  productType   ProductType @default(ROPA)
+  productType   ProductType @default(MERCH)
   featured      Boolean   @default(false)
   active        Boolean   @default(true)
   createdAt     DateTime  @default(now())
@@ -98,8 +98,8 @@ model Product {
 }
 
 enum ProductType {
-  ROPA
-  PARAFERNALIA
+  MERCH
+  SELECTED_GEAR
 }
 
 model Variant {

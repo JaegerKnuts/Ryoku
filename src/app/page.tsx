@@ -1,7 +1,8 @@
 import { HeroSection } from "@/components/home/HeroSection";
+import { HashArchiveEntry } from "@/components/home/HashArchiveEntry";
+import { BlogPreview } from "@/components/home/BlogPreview";
 import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { CategoriesSection } from "@/components/home/CategoriesSection";
-import { BlogPreview } from "@/components/home/BlogPreview";
 import { NewsletterSection } from "@/components/home/NewsletterSection";
 
 function BrushDivider() {
@@ -16,11 +17,13 @@ export default function Home() {
   return (
     <>
       <HeroSection />
+      <HashArchiveEntry />
+      <BrushDivider />
+      <BlogPreview />
+      <BrushDivider />
       <FeaturedProducts />
       <BrushDivider />
       <CategoriesSection />
-      <BrushDivider />
-      <BlogPreview />
       <NewsletterSection />
     </>
   );

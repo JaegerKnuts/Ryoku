@@ -3,8 +3,8 @@ import Image from "next/image";
 import { Send } from "lucide-react";
 
 const shopLinks = [
-  { href: "/shop?cat=ropa", label: "Ropa" },
-  { href: "/shop?cat=parafernalia", label: "Parafernalia" },
+  { href: "/shop?cat=merch", label: "Merch" },
+  { href: "/shop?cat=selected-gear", label: "Selected Gear" },
   { href: "/shop", label: "Todo" },
 ];
 
@@ -35,7 +35,7 @@ export function Footer() {
               <span className="text-lg font-bold tracking-[0.15em] uppercase">RYOKU</span>
             </Link>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed max-w-[280px]">
-              Streetwear y cultura de fumador. Diseñado con intención, fabricado con calidad.
+              Hash archive, merch y herramientas seleccionadas. Contenido independiente sobre hash culture.
             </p>
             <div className="flex gap-3 mt-6">
               <a

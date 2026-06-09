@@ -13,7 +13,13 @@ export async function GET(request: Request) {
     const where: Record<string, unknown> = { active: true };
 
     if (category && category !== "todo") {
-      where.productType = category.toUpperCase();
+      if (category === "merch") {
+        where.productType = "MERCH";
+      } else if (category === "selected-gear") {
+        where.productType = "SELECTED_GEAR";
+      } else {
+        where.productType = category.toUpperCase();
+      }
     }
 
     if (search) {

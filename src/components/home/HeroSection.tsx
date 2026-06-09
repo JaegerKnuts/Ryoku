@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight, ChevronDown, BookOpen } from "lucide-react";
 
 export function HeroSection() {
   return (
@@ -56,29 +56,38 @@ export function HeroSection() {
             className="text-xs uppercase tracking-[0.3em] mb-6 font-medium"
             style={{ color: "var(--brand)" }}
           >
-            Streetwear · Smoking Culture · España
+            Hash Archive · Streetwear · España
           </motion.p>
 
           <motion.h1
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
-            className="text-[clamp(4rem,12vw,9rem)] leading-[0.85] font-bold uppercase tracking-tight mb-8"
+            className="text-[clamp(3rem,10vw,7rem)] leading-[0.9] font-bold uppercase tracking-tight mb-6"
             style={{ fontFamily: "var(--font-bebas), Impact, sans-serif" }}
           >
-            Cultura<br />
-            <span style={{ color: "var(--brand)" }}>que se lleva</span><br />
-            puesta.
+            <span style={{ color: "var(--brand)" }}>RYOKU</span><br />
+            Hash Archive
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-xl font-semibold mb-4"
+          >
+            Entender lo que consumes también forma parte de la cultura.
+          </motion.p>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-lg max-w-lg leading-relaxed mb-10"
+            className="text-base max-w-lg leading-relaxed mb-10"
             style={{ color: "var(--text-secondary)" }}
           >
-            Ropa, accesorios de fumador y contenido real. Todo diseñado y fabricado en España con la identidad Ryoku.
+            Hash, extracciones, conservación y herramientas explicadas sin humo.
+            Contenido independiente, merch y productos seleccionados con criterio.
           </motion.p>
 
           <motion.div
@@ -88,19 +97,20 @@ export function HeroSection() {
             className="flex flex-wrap gap-4"
           >
             <Link
-              href="/shop"
+              href="/blog"
               className="group inline-flex items-center gap-3 px-8 py-4 text-white font-semibold text-sm uppercase tracking-[0.1em] transition-all hover:shadow-lg"
               style={{ background: "var(--brand)", borderRadius: "var(--radius)" }}
             >
-              Explorar tienda
+              <BookOpen className="w-4 h-4" />
+              Entrar al archivo
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <Link
-              href="/blog"
+              href="/shop"
               className="inline-flex items-center gap-3 px-8 py-4 border-2 font-semibold text-sm uppercase tracking-[0.1em] transition-all hover:border-[var(--brand)] hover:text-[var(--brand)]"
               style={{ borderColor: "var(--ink)", color: "var(--ink)", borderRadius: "var(--radius)" }}
             >
-              Leer el blog
+              Explorar tienda
             </Link>
           </motion.div>
         </div>
