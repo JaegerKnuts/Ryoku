@@ -58,7 +58,10 @@ export default function EditPost() {
 
       if (res.ok) {
         const { url } = await res.json();
-        setForm({ ...form, coverImage: url });
+        setForm((prev) => ({ ...prev, coverImage: url }));
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || "Error al subir la imagen");
       }
     } catch {
       alert("Error al subir la imagen");
@@ -148,36 +151,48 @@ export default function EditPost() {
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-2">Imagen</label>
-            <div className="flex gap-2">
-              <input
-                type="url"
-                value={form.coverImage}
-                onChange={(e) => setForm({ ...form, coverImage: e.target.value })}
-                placeholder="URL o sube una imagen"
-                className="flex-1 px-4 py-3 border border-[var(--border)] rounded-md text-sm focus:outline-none focus:border-[var(--brand)]"
-              />
-              <label
-                onClick={(e) => { e.preventDefault(); fileInputRef.current?.click(); }}
-                className="flex items-center gap-2 px-4 py-3 border border-[var(--border)] rounded-md text-sm cursor-pointer hover:bg-[var(--surface)] transition-colors"
-              >
-                {uploading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Upload className="w-4 h-4" />
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-              </label>
-            </div>
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-2">Imagen</label>
+          <div className="flex gap-2">
+            <input
+              type="url"
+              value={form.coverImage}
+              onChange={(e) => setForm({ ...form, coverImage: e.target.value })}
+              placeholder="URL o sube una imagen"
+              className="flex-1 min-w-0 px-4 py-3 border border-[var(--border)] rounded-md text-sm focus:outline-none focus:border-[var(--brand)]"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="shrink-0 flex items-center gap-2 px-4 py-3 border border-[var(--border)] rounded-md text-sm hover:bg-[var(--surface)] transition-colors disabled:opacity-50"
+              aria-label="Subir imagen"
+            >
+              {uploading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Upload className="w-4 h-4" />
+              )}
+              <span>Subir</span>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
           </div>
+          {form.coverImage && (
+            <img
+              src={form.coverImage}
+              alt="Vista previa"
+              className="mt-3 h-24 w-auto max-w-full rounded-md border border-[var(--border)] object-cover"
+            />
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-2">Tag</label>
             <input
