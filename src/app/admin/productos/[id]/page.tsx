@@ -376,7 +376,7 @@ export default function EditProducto() {
                   <div className="aspect-square rounded-lg overflow-hidden bg-[var(--surface)]">
                     <img src={img.url} alt={img.alt || ""} className="w-full h-full object-cover" />
                   </div>
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none group-hover:pointer-events-auto">
                     <button
                       type="button"
                       onClick={() => moveImage(index, "up")}

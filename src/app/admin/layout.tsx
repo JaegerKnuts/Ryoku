@@ -26,9 +26,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen flex bg-[var(--surface)]">
+    <div className="min-h-screen bg-[var(--surface)]">
       {/* Sidebar */}
-      <aside className="w-64 bg-[var(--bg)] border-r border-[var(--border)] flex flex-col">
+      <aside className="fixed top-16 left-0 bottom-0 w-64 bg-[var(--bg)] border-r border-[var(--border)] flex flex-col">
         <div className="p-6 border-b border-[var(--border)]">
           <h1
             className="text-2xl uppercase tracking-tight"
@@ -70,7 +70,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 p-8 overflow-auto">{children}</main>
+      <main className="ml-64 p-8 pt-24 min-h-screen">{children}</main>
     </div>
   );
 }
