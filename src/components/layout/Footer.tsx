@@ -31,7 +31,7 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <Image src="/logo.svg" alt="Ryoku" width={28} height={28} className="rounded-full" />
+              <Image src="/logo.jpg" alt="Ryoku" width={28} height={28} className="rounded-full" />
               <span className="text-lg font-bold tracking-[0.15em] uppercase">RYOKU</span>
             </Link>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed max-w-[280px]">

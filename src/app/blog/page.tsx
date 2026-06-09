@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, MessageCircle, Bookmark, Loader2, ArrowRight } from "lucide-react";
 import { getBlogPostImage } from "@/lib/blog";
+import { START_HERE_TAG } from "@/lib/blog-tags";
 import { isPostSaved, toggleSavedPost } from "@/lib/local-prefs";
 
 interface BlogPost {
@@ -33,13 +34,11 @@ export default function BlogPage() {
   const [likeState, setLikeState] = useState<Record<string, { liked: boolean; count: number }>>({});
 
   useEffect(() => {
-    fetch("/api/blog?limit=50")
+    fetch("/api/blog/tags")
       .then((res) => res.json())
       .then((data) => {
-        const uniqueTags = Array.from(
-          new Set((data.posts || []).map((p: BlogPost) => p.tag).filter(Boolean))
-        ) as string[];
-        if (uniqueTags.length > 0) setTags(["Todo", ...uniqueTags]);
+        const existing = data.tags || [];
+        setTags(["Todo", ...existing]);
       })
       .catch(() => {});
   }, []);
@@ -121,7 +120,7 @@ export default function BlogPage() {
         </p>
         <button
           type="button"
-          onClick={() => setActiveTag(tags[1] || "Todo")}
+          onClick={() => setActiveTag(tags.includes(START_HERE_TAG) ? START_HERE_TAG : tags[1] || "Todo")}
           className="group inline-flex items-center gap-2 px-5 py-2.5 text-white font-semibold text-xs uppercase tracking-[0.1em] transition-all hover:opacity-90"
           style={{ background: "var(--brand)", borderRadius: "var(--radius)" }}
         >

@@ -67,7 +67,7 @@ export function Header() {
               transition={{ duration: 0.3 }}
             >
               <Image
-                src="/logo.svg"
+                src="/logo.jpg"
                 alt="Ryoku"
                 width={36}
                 height={36}

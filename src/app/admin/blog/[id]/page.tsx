@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Upload, Loader2 } from "lucide-react";
 import Link from "next/link";
+import BlogTagField from "@/components/admin/BlogTagField";
 
 export default function EditPost() {
   const params = useParams();
@@ -194,12 +195,10 @@ export default function EditPost() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-2">Tag</label>
-            <input
-              type="text"
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-2">Sección</label>
+            <BlogTagField
               value={form.tag}
-              onChange={(e) => setForm({ ...form, tag: e.target.value })}
-              className="w-full px-4 py-3 border border-[var(--border)] rounded-md text-sm focus:outline-none focus:border-[var(--brand)]"
+              onChange={(tag) => setForm({ ...form, tag })}
             />
           </div>
           <div>

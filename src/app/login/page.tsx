@@ -67,7 +67,7 @@ function LoginForm() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-4">
-            <Image src="/logo.svg" alt="Ryoku" width={40} height={40} className="rounded-full" />
+            <Image src="/logo.jpg" alt="Ryoku" width={40} height={40} className="rounded-full" />
           </Link>
           <h1 className="text-2xl font-bold">Iniciar sesión</h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">
