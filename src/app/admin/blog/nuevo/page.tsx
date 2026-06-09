@@ -150,20 +150,25 @@ export default function NuevoPost() {
                 placeholder="URL o sube una imagen"
                 className="flex-1 px-4 py-3 border border-[var(--border)] rounded-md text-sm focus:outline-none focus:border-[var(--brand)]"
               />
-              <label className="flex items-center gap-2 px-4 py-3 border border-[var(--border)] rounded-md text-sm cursor-pointer hover:bg-[var(--surface)] transition-colors">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="flex items-center gap-2 px-4 py-3 border border-[var(--border)] rounded-md text-sm cursor-pointer hover:bg-[var(--surface)] transition-colors disabled:opacity-50"
+              >
                 {uploading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Upload className="w-4 h-4" />
                 )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-              </label>
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
             </div>
           </div>
           <div>
