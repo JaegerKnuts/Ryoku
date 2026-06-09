@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, MessageCircle, Bookmark, Loader2, ArrowRight } from "lucide-react";
 import { getBlogPostImage } from "@/lib/blog";
-import { START_HERE_TAG } from "@/lib/blog-tags";
+import { START_HERE_TAG } from "@/lib/blog-tag-constants";
 import { isPostSaved, toggleSavedPost } from "@/lib/local-prefs";
 
 interface BlogPost {
