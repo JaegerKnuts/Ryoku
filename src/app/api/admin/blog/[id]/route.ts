@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { syncBlogCoverImage } from "@/lib/blog";
+import { syncBlogImages } from "@/lib/blog";
+import { extractPrimaryImage } from "@/lib/blog-content";
 import prisma from "@/lib/prisma";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -27,12 +28,14 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   const postId = Number(id);
   const { title, slug, excerpt, content, coverImage, tag, status } = body;
 
+  const resolvedCover = extractPrimaryImage(content, coverImage);
+
   const data: Record<string, unknown> = {
     title,
     slug,
     excerpt: excerpt ?? null,
     content: content ?? null,
-    coverImage: coverImage ?? null,
+    coverImage: resolvedCover,
     tag: tag ?? null,
     status: status ?? "DRAFT",
   };
@@ -43,7 +46,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
   const post = await prisma.$transaction(async (tx) => {
     const updated = await tx.blogPost.update({ where: { id: postId }, data });
-    await syncBlogCoverImage(tx, postId, coverImage ?? null);
+    await syncBlogImages(tx, postId, content, resolvedCover);
     return updated;
   });
 

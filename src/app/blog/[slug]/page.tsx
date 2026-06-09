@@ -9,6 +9,8 @@ import { Heart, MessageCircle, Share2, Bookmark, ChevronLeft, Send, Loader2, Arr
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { getBlogPostImages } from "@/lib/blog";
+import { getReadTimeFromContent, hasHeroBlock, isStructuredContent } from "@/lib/blog-content";
+import BlogContent from "@/components/blog/BlogContent";
 import { isPostSaved, toggleSavedPost } from "@/lib/local-prefs";
 
 interface BlogPost {
@@ -24,152 +26,6 @@ interface BlogPost {
   images: { url: string; alt: string | null }[];
   likes: { id: number }[];
   comments: { id: number; content: string; createdAt: string; user: { name: string } | null }[];
-}
-
-type ContentBlock =
-  | { type: "h2"; text: string }
-  | { type: "h3"; text: string }
-  | { type: "p"; text: string }
-  | { type: "ul"; items: string[] }
-  | { type: "glossary"; term: string; definition: string }
-  | { type: "table"; headers: string[]; rows: string[][] }
-  | { type: "hr" };
-
-function parseContent(content: string): ContentBlock[] {
-  const lines = content.split('\n');
-  const blocks: ContentBlock[] = [];
-  let i = 0;
-
-  while (i < lines.length) {
-    const line = lines[i].trim();
-
-    if (!line) {
-      i++;
-      continue;
-    }
-
-    if (line.startsWith("## ")) {
-      blocks.push({ type: "h2", text: line.replace("## ", "") });
-      i++;
-      continue;
-    }
-
-    if (line.startsWith("### ")) {
-      blocks.push({ type: "h3", text: line.replace("### ", "") });
-      i++;
-      continue;
-    }
-
-    if (line === "---") {
-      blocks.push({ type: "hr" });
-      i++;
-      continue;
-    }
-
-    if (line.startsWith("|") && lines[i + 1]?.startsWith("|")) {
-      const headers = line.split("|").filter(Boolean).map(h => h.trim());
-      i += 2; // skip the |---| line
-      const rows: string[][] = [];
-      while (i < lines.length && lines[i].trim().startsWith("|")) {
-        rows.push(lines[i].split("|").filter(Boolean).map(c => c.trim()));
-        i++;
-      }
-      blocks.push({ type: "table", headers, rows });
-      continue;
-    }
-
-    if (line.startsWith("**") && line.includes("** - ")) {
-      const match = line.match(/\*\*(.+?)\*\*\s*-\s*(.+)/);
-      if (match) {
-        blocks.push({ type: "glossary", term: match[1], definition: match[2] });
-        i++;
-        continue;
-      }
-    }
-
-    if (line.startsWith("- ")) {
-      const items: string[] = [];
-      while (i < lines.length && lines[i].trim().startsWith("- ")) {
-        items.push(lines[i].trim().replace("- ", ""));
-        i++;
-      }
-      blocks.push({ type: "ul", items });
-      continue;
-    }
-
-    blocks.push({ type: "p", text: line });
-    i++;
-  }
-
-  return blocks;
-}
-
-function renderContent(block: ContentBlock, index: number) {
-  switch (block.type) {
-    case "h2":
-      return (
-        <h2 key={index} className="text-xl font-bold mt-10 mb-4 text-[var(--text)] break-words">
-          {block.text}
-        </h2>
-      );
-    case "h3":
-      return (
-        <h3 key={index} className="text-lg font-semibold mt-8 mb-3 text-[var(--text)] break-words">
-          {block.text}
-        </h3>
-      );
-    case "p":
-      return (
-        <p key={index} className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4 break-words">
-          {block.text}
-        </p>
-      );
-    case "ul":
-      return (
-        <ul key={index} className="space-y-2 my-4">
-          {block.items.map((item, j) => (
-            <li key={j} className="flex items-start gap-2 text-sm text-[var(--text-secondary)] leading-relaxed min-w-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand)] mt-1.5 flex-shrink-0" />
-              <span className="break-words">{item}</span>
-            </li>
-          ))}
-        </ul>
-      );
-    case "glossary":
-      return (
-        <div key={index} className="flex items-start gap-3 py-3 border-b border-[var(--border)] last:border-0 min-w-0">
-          <span className="text-sm font-bold text-[var(--brand)] flex-shrink-0 mt-0.5 break-words">{block.term}</span>
-          <span className="text-sm text-[var(--text-secondary)] break-words min-w-0">{block.definition}</span>
-        </div>
-      );
-    case "table":
-      return (
-        <div key={index} className="overflow-x-auto my-6 rounded-xl border border-[var(--border)]">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-[var(--surface)]">
-                {block.headers.map((h, j) => (
-                  <th key={j} className="px-4 py-3 text-left font-semibold text-xs uppercase tracking-wider">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {block.rows.map((row, j) => (
-                <tr key={j} className="border-t border-[var(--border)]">
-                  {row.map((cell, k) => (
-                    <td key={k} className="px-4 py-3 text-[var(--text-secondary)] break-words">{cell}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      );
-    case "hr":
-      return <div key={index} className="my-8 h-[1px] bg-[var(--border)]" />;
-    default:
-      return null;
-  }
 }
 
 export default function BlogPostPage() {
@@ -323,12 +179,6 @@ export default function BlogPostPage() {
     });
   };
 
-  const getReadTime = (content: string) => {
-    const words = content?.split(/\s+/).length || 0;
-    const minutes = Math.ceil(words / 200);
-    return `${minutes} min`;
-  };
-
   if (loading) {
     return (
       <div className="pt-24 pb-16 px-4 flex items-center justify-center min-h-[60vh]">
@@ -348,9 +198,10 @@ export default function BlogPostPage() {
     );
   }
 
-  const contentBlocks = parseContent(post.content || "");
+  const structured = isStructuredContent(post.content);
+  const showLegacyCarousel = !structured || !hasHeroBlock(post.content);
   const images = getBlogPostImages(post);
-  const readTime = getReadTime(post.content || "");
+  const readTime = getReadTimeFromContent(post.content);
 
   return (
     <div className="pt-24 pb-16 px-4 sm:px-6 max-w-3xl mx-auto min-w-0 break-words overflow-x-hidden">
@@ -365,47 +216,48 @@ export default function BlogPostPage() {
         </Link>
       </motion.div>
 
-      {/* Image carousel */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mb-6"
-      >
-        <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-[var(--surface)]">
-          {images[currentImage].startsWith("data:") ? (
-            <img
-              src={images[currentImage]}
-              alt={post.title}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          ) : (
-            <Image
-              src={images[currentImage]}
-              alt={post.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 768px"
-              priority
-            />
-          )}
-          {images.length > 1 && (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-              {images.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentImage(i)}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    currentImage === i
-                      ? "bg-white w-6"
-                      : "bg-white/50 hover:bg-white/80"
-                  }`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </motion.div>
+      {showLegacyCarousel && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-6"
+        >
+          <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-[var(--surface)]">
+            {images[currentImage].startsWith("data:") ? (
+              <img
+                src={images[currentImage]}
+                alt={post.title}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            ) : (
+              <Image
+                src={images[currentImage]}
+                alt={post.title}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 768px"
+                priority
+              />
+            )}
+            {images.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                {images.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentImage(i)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      currentImage === i
+                        ? "bg-white w-6"
+                        : "bg-white/50 hover:bg-white/80"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
 
       {/* Action bar */}
       <motion.div
@@ -484,7 +336,7 @@ export default function BlogPostPage() {
         transition={{ delay: 0.25 }}
         className="mb-12"
       >
-        {contentBlocks.map((block, i) => renderContent(block, i))}
+        <BlogContent content={post.content} />
       </motion.article>
 
       {/* Productos útiles */}

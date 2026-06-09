@@ -1,22 +1,20 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Upload, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import BlogTagField from "@/components/admin/BlogTagField";
+import BlogEditor from "@/components/admin/blog/BlogEditor";
 
 export default function NuevoPost() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     title: "",
     slug: "",
     excerpt: "",
     content: "",
-    coverImage: "",
     tag: "",
     status: "DRAFT",
   });
@@ -26,35 +24,6 @@ export default function NuevoPost() {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
-  };
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/admin/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (res.ok) {
-        const { url } = await res.json();
-        setForm((prev) => ({ ...prev, coverImage: url }));
-      } else {
-        const data = await res.json().catch(() => ({}));
-        alert(data.error || "Error al subir la imagen");
-      }
-    } catch {
-      alert("Error al subir la imagen");
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,7 +59,7 @@ export default function NuevoPost() {
         </h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="max-w-2xl bg-[var(--bg)] p-8 rounded-lg border border-[var(--border)] space-y-6">
+      <form onSubmit={handleSubmit} className="max-w-5xl bg-[var(--bg)] p-6 sm:p-8 rounded-lg border border-[var(--border)] space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-2">
@@ -125,63 +94,23 @@ export default function NuevoPost() {
             value={form.excerpt}
             onChange={(e) => setForm({ ...form, excerpt: e.target.value })}
             rows={2}
+            placeholder="Resumen breve para el listado y redes"
             className="w-full px-4 py-3 border border-[var(--border)] rounded-md text-sm focus:outline-none focus:border-[var(--brand)] resize-none"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-2">
-            Contenido
+          <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-3">
+            Contenido del post
           </label>
-          <textarea
+          <p className="text-xs text-[var(--text-muted)] mb-4">
+            Construye el artículo bloque a bloque: portadas, imágenes en distintas posiciones, galerías, tablas y más.
+          </p>
+          <BlogEditor
             value={form.content}
-            onChange={(e) => setForm({ ...form, content: e.target.value })}
-            rows={10}
-            className="w-full px-4 py-3 border border-[var(--border)] rounded-md text-sm focus:outline-none focus:border-[var(--brand)] resize-none"
+            onChange={(content) => setForm((prev) => ({ ...prev, content }))}
+            postTitle={form.title}
           />
-        </div>
-
-        <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-2">
-            Imagen
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={form.coverImage}
-              onChange={(e) => setForm({ ...form, coverImage: e.target.value })}
-              placeholder="URL o sube una imagen"
-              className="flex-1 min-w-0 px-4 py-3 border border-[var(--border)] rounded-md text-sm focus:outline-none focus:border-[var(--brand)]"
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="shrink-0 flex items-center gap-2 px-4 py-3 border border-[var(--border)] rounded-md text-sm hover:bg-[var(--surface)] transition-colors disabled:opacity-50"
-              aria-label="Subir imagen"
-            >
-              {uploading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Upload className="w-4 h-4" />
-              )}
-              <span>Subir</span>
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-          </div>
-          {form.coverImage && (
-            <img
-              src={form.coverImage}
-              alt="Vista previa"
-              className="mt-3 h-24 w-auto max-w-full rounded-md border border-[var(--border)] object-cover"
-            />
-          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
